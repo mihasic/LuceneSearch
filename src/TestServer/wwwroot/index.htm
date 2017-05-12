@@ -54,6 +54,7 @@
             <table>
                 <thead>
                 <tr>
+                    <th>Key</th>
                     <th>Name</th>
                     <th>Source</th>
                 </tr>
@@ -111,7 +112,7 @@
 
             fetch(uri).then(response => response.json().then(json => json.results.forEach(doc => {
                 var tr = document.createElement('tr');
-                tr.innerHTML = `<td>${doc.name}</td><td><code>${JSON.stringify(JSON.parse(doc.__src), null, 2)}</code></td>`;
+                tr.innerHTML = `<td>${doc.key}</td><td>${doc.name}</td><td><code>${JSON.stringify(JSON.parse(doc.__src), null, 2)}</code></td>`;
                 results.appendChild(tr);
             })));
         }

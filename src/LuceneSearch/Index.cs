@@ -35,16 +35,15 @@ namespace LuceneSearch
             });
         }
 
-        public long LoadDocuments(IEnumerable<string> jsonDocuments, Func<string, IEnumerable<KeyValuePair<string, string>>> transform)
+        public long LoadDocuments(IEnumerable<IEnumerable<KeyValuePair<string, string>>> docs)
         {
             long count = 0;
             //using (var analyzer = new StopAnalyzer(LuceneVersion.LUCENE_48))
             //using (var analyzer = new Lucene.Net.Analysis.Core.KeywordAnalyzer())
             using (var ixw = new IndexWriter(_dir, new IndexWriterConfig(LuceneVersion.LUCENE_48, _analyzer)))
             {
-                foreach(var json in jsonDocuments)
+                foreach(var doc in docs)
                 {
-                    var doc = transform(json);
                     var luceneDoc = new Document();
                     foreach (var f in doc.Where(f => _mapping.ContainsKey(f.Key)))
                     {
@@ -72,6 +71,40 @@ namespace LuceneSearch
             using (var ir = DirectoryReader.Open(_dir))
             {
                 return QuerySearch(ir, mainQuery, take, skip, sort, fieldsToLoad);
+            }
+        }
+
+        public IReadOnlyCollection<KeyValuePair<string, string>> GetByTerm(string name, string value)
+        {
+            using (var ir = DirectoryReader.Open(_dir))
+            {
+                var searcher = new IndexSearcher(ir);
+                var scores = searcher.Search(new TermQuery(new Term(name, new BytesRef(value))), 1).ScoreDocs;
+                if (scores.Length > 0)
+                {
+                    var doc = searcher.Doc(scores[0].Doc);
+                    return doc.Select(x => new KeyValuePair<string, string>(x.Name, x.GetStringValue())).ToArray();
+                }
+                return null;
+            }
+        }
+        public void DeleteByTerm(string name, string value)
+        {
+            using (var ixw = new IndexWriter(_dir, new IndexWriterConfig(LuceneVersion.LUCENE_48, _analyzer)))
+            {
+                ixw.DeleteDocuments(new Term(name, new BytesRef(value)));
+            }
+        }
+        public void UpdateByTerm(string name, string value, IEnumerable<KeyValuePair<string, string>> doc)
+        {
+            using (var ixw = new IndexWriter(_dir, new IndexWriterConfig(LuceneVersion.LUCENE_48, _analyzer)))
+            {
+                var luceneDoc = new Document();
+                foreach (var f in doc.Where(f => _mapping.ContainsKey(f.Key)))
+                {
+                    luceneDoc.Add(_mapping[f.Key](f.Value));
+                }
+                ixw.UpdateDocument(new Term(name, new BytesRef(value)), luceneDoc);
             }
         }
 

@@ -36,12 +36,28 @@
                 needLoad = true;
             }
 
+            Func<string, IEnumerable<KeyValuePair<string, string>>> transform = json =>
+                from j in new[] {json}
+                let doc = (dynamic)JsonConvert.DeserializeObject(json)
+                from p in new[]
+                {
+                    new P("key", (string)doc.key),
+                    new P("name", (string)doc.name),
+                    new P("personal_name", (string)doc.personal_name),
+                    new P("last_modified", (string)doc.last_modified.value),
+                    new P("revision", (string)doc.revision),
+                    new P("name_f", (string)doc.name),
+                    new P("personal_name_f", (string)doc.personal_name),
+                    new P("__src", j)
+                }
+                select p;
+
             var index = new Index(dataDirectory, new []
             {
+                new Field("key"),
                 new Field("name"),
                 new Field("personal_name"),
                 new Field("last_modified"),
-                new Field("key"),
                 new Field("revision"),
                 new Field("name_f", fullText: true),
                 new Field("personal_name_f", fullText: true),
@@ -50,21 +66,7 @@
 
             if (needLoad)
             {
-                index.LoadDocuments(TestData.DocumentsSmall(), json =>
-                    from j in new[] {json}
-                    let doc = (dynamic)JsonConvert.DeserializeObject(json)
-                    from p in new[]
-                    {
-                        new P("name", (string)doc.name),
-                        new P("personal_name", (string)doc.personal_name),
-                        new P("last_modified", (string)doc.last_modified.value),
-                        new P("key", (string)doc.key),
-                        new P("revision", (string)doc.revision),
-                        new P("name_f", (string)doc.name),
-                        new P("personal_name_f", (string)doc.personal_name),
-                        new P("__src", j)
-                    }
-                    select p);
+                index.LoadDocuments(TestData.DocumentsXL().Select(transform));
             }
 
             if (env.IsDevelopment())
@@ -72,7 +74,9 @@
                 app.UseDeveloperExceptionPage();
             }
 
-            app.Map(new PathString("/api"), a => a.UseSearchMiddleware(index));
+            app.Map(new PathString("/api"), a => a
+                .UseSearchMiddleware(index)
+                .UseDocumentMiddleware(index, "key", transform));
 
             app.UseDefaultFiles();
             app.UseStaticFiles();

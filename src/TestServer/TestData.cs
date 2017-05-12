@@ -18,7 +18,7 @@ namespace TestServer
                 string line;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    yield return line.Split('\t').Last();
+                    yield return line.Substring(line.IndexOf('{'));
                 }
             }
         }
