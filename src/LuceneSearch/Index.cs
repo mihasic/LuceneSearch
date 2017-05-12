@@ -2,6 +2,7 @@ namespace LuceneSearch
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Globalization;
     using System.Linq;
     using System.Threading;
@@ -16,9 +17,21 @@ namespace LuceneSearch
     public class Index : IDisposable
     {
         private readonly Directory _dir;
+        private readonly SearcherManager _sm;
         private readonly Analyzer _analyzer;
         private readonly IDisposable _disposable;
         private readonly Dictionary<string, Func<string, IIndexableField>> _mapping;
+
+        private IndexWriter _writer;
+
+        private IndexWriter Writer
+        {
+            get
+            {
+                return _writer = _writer ?? new IndexWriter(_dir, new IndexWriterConfig(LuceneVersion.LUCENE_48, _analyzer));
+
+            }
+        }
 
         public Index(string directory, IEnumerable<Field> mapping)
         {
@@ -27,10 +40,14 @@ namespace LuceneSearch
             var t = PerFieldAnalyzer.Create("StandardAnalyzer", analyzerMap);
             _analyzer = t.Item1;
             _dir = DirectoryProvider.Create(directory);
+            _sm = new SearcherManager(_dir, null);
 
             _disposable = new DelegateDisposable(() =>
             {
                 t.Item2.Dispose();
+                _writer?.Dispose();
+                _writer = null;
+                _sm.Dispose();
                 _dir.Dispose();
             });
         }
@@ -38,9 +55,7 @@ namespace LuceneSearch
         public long LoadDocuments(IEnumerable<IEnumerable<KeyValuePair<string, string>>> docs)
         {
             long count = 0;
-            //using (var analyzer = new StopAnalyzer(LuceneVersion.LUCENE_48))
-            //using (var analyzer = new Lucene.Net.Analysis.Core.KeywordAnalyzer())
-            using (var ixw = new IndexWriter(_dir, new IndexWriterConfig(LuceneVersion.LUCENE_48, _analyzer)))
+            var ixw = Writer;
             {
                 foreach(var doc in docs)
                 {
@@ -53,10 +68,11 @@ namespace LuceneSearch
                     count++;
                 }
             }
+            _sm.MaybeRefreshBlocking();
             return count;
         }
 
-        public Tuple<int, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> Search(
+        public Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> Search(
             IDictionary<string, IReadOnlyCollection<string>> filters,
             int take = 128,
             int skip = 0,
@@ -68,17 +84,14 @@ namespace LuceneSearch
                 let valueQueries = filter.Value.Select(v => QueryHelper.Wildcard(filter.Key, v)).ToArray()
                 select QueryHelper.BooleanOr(valueQueries);
             var mainQuery = QueryHelper.BooleanAnd(queries.ToArray());
-            using (var ir = DirectoryReader.Open(_dir))
-            {
-                return QuerySearch(ir, mainQuery, take, skip, sort, fieldsToLoad);
-            }
+            return QuerySearch(mainQuery, take, skip, sort, fieldsToLoad);
         }
 
         public IReadOnlyCollection<KeyValuePair<string, string>> GetByTerm(string name, string value)
         {
-            using (var ir = DirectoryReader.Open(_dir))
+            var searcher = _sm.Acquire();
+            try
             {
-                var searcher = new IndexSearcher(ir);
                 var scores = searcher.Search(new TermQuery(new Term(name, new BytesRef(value))), 1).ScoreDocs;
                 if (scores.Length > 0)
                 {
@@ -87,17 +100,21 @@ namespace LuceneSearch
                 }
                 return null;
             }
+            finally
+            {
+                _sm.Release(searcher);
+            }
         }
         public void DeleteByTerm(string name, string value)
         {
-            using (var ixw = new IndexWriter(_dir, new IndexWriterConfig(LuceneVersion.LUCENE_48, _analyzer)))
+            var ixw = Writer;
             {
                 ixw.DeleteDocuments(new Term(name, new BytesRef(value)));
             }
         }
         public void UpdateByTerm(string name, string value, IEnumerable<KeyValuePair<string, string>> doc)
         {
-            using (var ixw = new IndexWriter(_dir, new IndexWriterConfig(LuceneVersion.LUCENE_48, _analyzer)))
+            var ixw = Writer;
             {
                 var luceneDoc = new Document();
                 foreach (var f in doc.Where(f => _mapping.ContainsKey(f.Key)))
@@ -108,36 +125,40 @@ namespace LuceneSearch
             }
         }
 
-        public Tuple<int, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> Search(
+        public Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> Search(
             string query,
             int take = 128,
             int skip = 0,
             string sort = null,
             ISet<string> fieldsToLoad = null)
         {
-            using (var ir = DirectoryReader.Open(_dir))
-            {
-                var parser = new QueryParser(LuceneVersion.LUCENE_48, _mapping.Keys.First(), _analyzer);
-                parser.AllowLeadingWildcard = true;
-                parser.LowercaseExpandedTerms = false;
-                var mainQuery = parser.Parse(query);
-                return QuerySearch(ir, mainQuery, take, skip, sort, fieldsToLoad);
-            }
+            var parser = new QueryParser(LuceneVersion.LUCENE_48, _mapping.Keys.First(), _analyzer);
+            parser.AllowLeadingWildcard = true;
+            parser.LowercaseExpandedTerms = false;
+            var mainQuery = parser.Parse(query);
+            return QuerySearch(mainQuery, take, skip, sort, fieldsToLoad);
         }
 
-        private static Tuple<int, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> QuerySearch(DirectoryReader ir, Query mainQuery, int take, int skip, string sort, ISet<string> fieldsToLoad)
+        private Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> QuerySearch(Query mainQuery, int take, int skip, string sort, ISet<string> fieldsToLoad)
         {
-            var searcher = new IndexSearcher(ir);
-            var res = sort == null ? searcher.Search(mainQuery, take + skip) : searcher.Search(mainQuery, take + skip, new Sort(new SortField(sort, SortFieldType.STRING)));
-            var docs = new List<IReadOnlyCollection<KeyValuePair<string, string>>>(take);
-            var scores = res.ScoreDocs;
-            for (int i = skip; i < scores.Length; i++)
+            var sw = Stopwatch.StartNew();
+            var searcher = _sm.Acquire();
+            try
             {
-                var doc = searcher.Doc(scores[i].Doc, fieldsToLoad);
-                docs.Add(doc.Select(x => new KeyValuePair<string, string>(x.Name, x.GetStringValue())).ToArray());
-
+                var res = sort == null ? searcher.Search(mainQuery, take + skip) : searcher.Search(mainQuery, take + skip, new Sort(new SortField(sort, SortFieldType.STRING)));
+                var docs = new List<IReadOnlyCollection<KeyValuePair<string, string>>>(take);
+                var scores = res.ScoreDocs;
+                for (int i = skip; i < scores.Length; i++)
+                {
+                    var doc = searcher.Doc(scores[i].Doc, fieldsToLoad);
+                    docs.Add(doc.Select(x => new KeyValuePair<string, string>(x.Name, x.GetStringValue())).ToArray());
+                }
+                return Tuple.Create<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>>(res.TotalHits, sw.Elapsed, docs);
             }
-            return Tuple.Create<int, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>>(res.TotalHits, docs);
+            finally
+            {
+                _sm.Release(searcher);
+            }
         }
 
         public IEnumerable<string> GetTerms(
@@ -146,8 +167,10 @@ namespace LuceneSearch
             int? take = null,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            using (var ir = DirectoryReader.Open(_dir))
+            var searcher = _sm.Acquire();
+            try
             {
+                var ir = searcher.IndexReader;
                 var terms = MultiFields.GetTerms(ir, termName);
                 if (terms == null) yield break;
                 var termsEnum = terms.GetIterator(null);
@@ -165,6 +188,10 @@ namespace LuceneSearch
                     yield return stringTerm;
                     if (take.HasValue && ++count == take.Value) yield break;
                 }
+            }
+            finally
+            {
+                _sm.Release(searcher);
             }
         }
 

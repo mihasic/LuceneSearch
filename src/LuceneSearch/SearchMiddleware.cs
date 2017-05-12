@@ -54,7 +54,7 @@ namespace LuceneSearch
             };
         }
 
-        private static async Task ReturnSearchResult(Tuple<int, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> result, HttpContext ctx)
+        private static async Task ReturnSearchResult(Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> result, HttpContext ctx)
         {
             var ct = ctx.RequestAborted;
 
@@ -68,9 +68,12 @@ namespace LuceneSearch
                 await writer.WritePropertyNameAsync("totalCount", ct).ConfigureAwait(false);
                 await writer.WriteValueAsync(result.Item1, ct).ConfigureAwait(false);
 
+                await writer.WritePropertyNameAsync("elapsed", ct).ConfigureAwait(false);
+                await writer.WriteValueAsync(result.Item2, ct).ConfigureAwait(false);
+
                 await writer.WritePropertyNameAsync("results", ct).ConfigureAwait(false);
                 await writer.WriteStartArrayAsync(ct).ConfigureAwait(false);
-                foreach (var document in result.Item2)
+                foreach (var document in result.Item3)
                 {
                     if (ct.IsCancellationRequested) return;
                     var obj = document.GroupBy(x => x.Key);
@@ -105,7 +108,7 @@ namespace LuceneSearch
             }
         }
 
-        private static Tuple<int, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> SearchByFilter(
+        private static Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> SearchByFilter(
             Index index, HttpContext ctx)
         {
             var filters = ctx.Request.Query.Where(x => !s_skipped.Contains(x.Key))
@@ -117,7 +120,7 @@ namespace LuceneSearch
             return result;
         }
 
-        private static Tuple<int, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> SearchByQuery(
+        private static Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> SearchByQuery(
             Index index, HttpContext ctx, string query)
         {
             var skip = ctx.Request.Query["skip"].FirstOrDefault().ParseInt() ?? 0;
