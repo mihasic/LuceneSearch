@@ -270,3 +270,6 @@ __pycache__/
 # lucene cache
 src/TestServer/data
 src/TestServer/data*/
+
+# build tools
+.dotnet

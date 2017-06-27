@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Test</title>
+    <style>
+         body *:not(div) {
+             margin: 3px;
+         }
+         body {
+             font-family: Courier New
+         }
+        details {
+            border: 1px black solid
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+        }
+        button {
+            min-width: 25px;
+        }
+        code {
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <form>
+        <details>
+            <summary>Get</summary>
+            <input id="getId" type="text" /><br />
+            <textarea id="getResponse" readonly="readonly"></textarea><br />
+            <button onclick="onGet(); return false;">Get</button>
+        </details>
+        <details>
+            <summary>Store</summary>
+            <input id="putId" type="text" /><br />
+            <textarea id="putRequest"></textarea><br />
+            <button onclick="onPut(); return false;">Put</button>
+        </details>
+        <details>
+            <summary>Delete</summary>
+            <input id="deleteId" type="text" /><br />
+            <button onclick="onDelete(); return false;">Delete</button>
+        </details>
+        <details>
+            <summary>Search</summary>
+            <div id="searchId">
+                <div><input type="text"/><input type="text"/><button onclick="AddSearchRow(); return false;">+</button></div>
+            </div>
+            <button onclick="onSearch(); return false;">Search</button>
+            <table>
+                <thead>
+                <tr>
+                    <th>Key</th>
+                    <th>Name</th>
+                    <th>Source</th>
+                </tr>
+                </thead>
+                <tbody id="searchResults"></tbody>
+            </table>
+        </details>
+    </form>
+    
+    <script>
+        function onGet() {
+            document.getElementById('getResponse').value = '';
+            fetch(`/api/${document.getElementById('getId').value}`)
+                .then(response =>
+                    response.json()
+                    .then(json => { document.getElementById('getResponse').value = JSON.stringify(json, null, 2); })
+                );
+        }
+        function onPut() {
+            fetch(`/api/${document.getElementById('putId').value}`,
+            {
+                method: 'PUT',
+                body: document.getElementById('putRequest').value
+            });
+        }
+        function onDelete() {
+            fetch(`/api/${document.getElementById('deleteId').value}`,
+            {
+                method: 'DELETE'
+            });
+        }
+        function AddSearchRow() {
+            var wrapper = document.getElementById('searchId');
+            var div = document.createElement('div');
+            div.innerHTML = '<input type="text" /><input type="text" /><button onclick="RemoveSearchRow(this); return false;">-</button>';
+            wrapper.appendChild(div);
+        }
+        function RemoveSearchRow(el) {
+            var toRemove = el.parentNode;
+            toRemove.parentNode.removeChild(toRemove);
+        }
+        function onSearch() {
+            var results = document.getElementById('searchResults');
+            results.innerHTML = '';
+            var uri = '/api/search?';
+            document.getElementById('searchId').childNodes.forEach(div => {
+                if (div.nodeType === 1) {
+                    var name = encodeURIComponent(div.childNodes[0].value);
+                    var value = encodeURIComponent(div.childNodes[1].value);
+                    if (name !== "" && name !== "null" && name !== "undefined") {
+                        uri += `${name}=${value}&`;
+                    }
+                }
+            });
+
+            fetch(uri).then(response => response.json().then(json => json.results.forEach(doc => {
+                var tr = document.createElement('tr');
+                tr.innerHTML = `<td>${doc.key}</td><td>${doc.name}</td><td><code>${JSON.stringify(JSON.parse(doc.__src), null, 2)}</code></td>`;
+                results.appendChild(tr);
+            })));
+        }
+    </script>
+</body>
+</html>
