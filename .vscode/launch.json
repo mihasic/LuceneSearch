@@ -10,9 +10,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceRoot}/src/TestServer/bin/Debug/netcoreapp1.1/TestServer.dll",
+            "program": "${workspaceRoot}/test/TestServer/bin/Debug/netcoreapp1.1/TestServer.dll",
             "args": [],
-            "cwd": "${workspaceRoot}/src/TestServer",
+            "cwd": "${workspaceRoot}/test/TestServer",
             "stopAtEntry": false,
             "internalConsoleOptions": "openOnSessionStart",
             "launchBrowser": {
