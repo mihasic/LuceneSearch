@@ -274,3 +274,4 @@ src/TestServer/data*/
 # build tools
 .dotnet
 test/TestServer/data/
+ol_dump_authors_2017-04-30.txt
