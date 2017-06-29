@@ -24,6 +24,11 @@ namespace LuceneSearch
                     if ("GET".Equals(ctx.Request.Method, StringComparison.OrdinalIgnoreCase))
                     {
                         var obj = index.GetByTerm(identityField, id);
+                        if (obj == null)
+                        {
+                            await next(ctx).ConfigureAwait(false);
+                            return;
+                        }
                         var ct = ctx.RequestAborted;
 
                         ctx.Response.StatusCode = (int)HttpStatusCode.OK;
