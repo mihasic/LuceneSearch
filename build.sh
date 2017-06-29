@@ -7,19 +7,19 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
 fi
 
 for f in src/**/*.csproj; do
-    (cd `dirname $f`; dotnet restore)
+    $(cd `dirname $f`; dotnet restore) || exit $?
 done
 for f in src/**/*.csproj; do
-    (cd `dirname $f`; dotnet build)
+    $(cd `dirname $f`; dotnet build) || exit $?
 done
 
 for f in test/**/*.csproj; do
-    (cd `dirname $f`; dotnet restore && dotnet build;
+    $(cd `dirname $f`; dotnet restore && dotnet build;
      if [[ `basename $f` =~ Tests ]]; then
         dotnet test;
-     fi )
+     fi ) || exit $?
 done
 
 for f in src/**/*.csproj; do
-    (cd `dirname $f`; dotnet pack)
+    $(cd `dirname $f`; dotnet pack) || exit $?
 done

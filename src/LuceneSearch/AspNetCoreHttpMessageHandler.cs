@@ -283,7 +283,7 @@ namespace System.Net.Http
                 cRequest.PathBase = PathString.Empty;
                 cRequest.QueryString = QueryString.FromUriComponent(request.RequestUri);
                 Context.RequestAborted = cancellationToken;
-                Context.Response.OnStarting(_sendingHeaders);
+                //Context.Response.OnStarting(_sendingHeaders);
 
                 foreach (var header in request.Headers)
                 {
