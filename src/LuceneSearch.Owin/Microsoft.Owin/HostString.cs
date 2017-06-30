@@ -11,7 +11,7 @@ namespace Microsoft.Owin
     /// Represents the host portion of a Uri can be used to construct Uri's properly formatted and encoded for use in
     /// HTTP headers.
     /// </summary>
-    public struct HostString : IEquatable<HostString>
+    internal struct HostString : IEquatable<HostString>
     {
         private readonly string _value;
 

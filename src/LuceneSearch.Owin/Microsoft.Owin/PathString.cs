@@ -10,7 +10,7 @@ namespace Microsoft.Owin
     /// <summary>
     /// Provides correct escaping for Path and PathBase values when needed to reconstruct a request or redirect URI string
     /// </summary>
-    public struct PathString : IEquatable<PathString>
+    internal struct PathString : IEquatable<PathString>
     {
         private static Func<string, string> EscapeDataString = Uri.EscapeDataString;
 
