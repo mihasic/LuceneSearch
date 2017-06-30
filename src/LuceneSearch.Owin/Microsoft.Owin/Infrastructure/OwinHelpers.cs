@@ -23,22 +23,14 @@ namespace Microsoft.Owin.Infrastructure
             _data = data;
         }
 
-        public StringSegment Formatting
-        {
-            get { return _formatting; }
-        }
+        public StringSegment Formatting => _formatting;
 
-        public StringSegment Data
-        {
-            get { return _data; }
-        }
+        public StringSegment Data => _data;
 
         #region Equality members
 
-        public bool Equals(HeaderSegment other)
-        {
-            return _formatting.Equals(other._formatting) && _data.Equals(other._data);
-        }
+        public bool Equals(HeaderSegment other) =>
+            _formatting.Equals(other._formatting) && _data.Equals(other._data);
 
         public override bool Equals(object obj)
         {
@@ -58,15 +50,11 @@ namespace Microsoft.Owin.Infrastructure
             }
         }
 
-        public static bool operator ==(HeaderSegment left, HeaderSegment right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(HeaderSegment left, HeaderSegment right) =>
+            left.Equals(right);
 
-        public static bool operator !=(HeaderSegment left, HeaderSegment right)
-        {
-            return !left.Equals(right);
-        }
+        public static bool operator !=(HeaderSegment left, HeaderSegment right) =>
+            !left.Equals(right);
 
         #endregion
     }
@@ -83,10 +71,7 @@ namespace Microsoft.Owin.Infrastructure
 
         #region Equality members
 
-        public bool Equals(HeaderSegmentCollection other)
-        {
-            return Equals(_headers, other._headers);
-        }
+        public bool Equals(HeaderSegmentCollection other) => Equals(_headers, other._headers);
 
         public override bool Equals(object obj)
         {
@@ -98,37 +83,22 @@ namespace Microsoft.Owin.Infrastructure
             return obj is HeaderSegmentCollection && Equals((HeaderSegmentCollection)obj);
         }
 
-        public override int GetHashCode()
-        {
-            return (_headers != null ? _headers.GetHashCode() : 0);
-        }
+        public override int GetHashCode() =>
+            (_headers != null ? _headers.GetHashCode() : 0);
 
-        public static bool operator ==(HeaderSegmentCollection left, HeaderSegmentCollection right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(HeaderSegmentCollection left, HeaderSegmentCollection right) =>
+            left.Equals(right);
 
-        public static bool operator !=(HeaderSegmentCollection left, HeaderSegmentCollection right)
-        {
-            return !left.Equals(right);
-        }
+        public static bool operator !=(HeaderSegmentCollection left, HeaderSegmentCollection right) =>
+            !left.Equals(right);
 
         #endregion
 
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(_headers);
-        }
+        public Enumerator GetEnumerator() => new Enumerator(_headers);
 
-        IEnumerator<HeaderSegment> IEnumerable<HeaderSegment>.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator<HeaderSegment> IEnumerable<HeaderSegment>.GetEnumerator() => GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         internal struct Enumerator : IEnumerator<HeaderSegment>
         {
@@ -378,37 +348,22 @@ namespace Microsoft.Owin.Infrastructure
             _count = count;
         }
 
-        public string Buffer
-        {
-            get { return _buffer; }
-        }
+        public string Buffer => _buffer;
 
-        public int Offset
-        {
-            get { return _offset; }
-        }
+        public int Offset => _offset;
 
-        public int Count
-        {
-            get { return _count; }
-        }
+        public int Count => _count;
 
-        public string Value
-        {
-            get { return _offset == -1 ? null : _buffer.Substring(_offset, _count); }
-        }
+        public string Value =>
+            _offset == -1 ? null : _buffer.Substring(_offset, _count);
 
-        public bool HasValue
-        {
-            get { return _offset != -1 && _count != 0 && _buffer != null; }
-        }
+        public bool HasValue =>
+            _offset != -1 && _count != 0 && _buffer != null;
 
         #region Equality members
 
-        public bool Equals(StringSegment other)
-        {
-            return string.Equals(_buffer, other._buffer) && _offset == other._offset && _count == other._count;
-        }
+        public bool Equals(StringSegment other) =>
+            string.Equals(_buffer, other._buffer) && _offset == other._offset && _count == other._count;
 
         public override bool Equals(object obj)
         {
@@ -431,15 +386,11 @@ namespace Microsoft.Owin.Infrastructure
             }
         }
 
-        public static bool operator ==(StringSegment left, StringSegment right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(StringSegment left, StringSegment right) =>
+            left.Equals(right);
 
-        public static bool operator !=(StringSegment left, StringSegment right)
-        {
-            return !left.Equals(right);
-        }
+        public static bool operator !=(StringSegment left, StringSegment right) =>
+            !left.Equals(right);
 
         #endregion
 
@@ -488,54 +439,17 @@ namespace Microsoft.Owin.Infrastructure
             return string.Compare(_buffer, _offset, text, 0, textLength, comparisonType) == 0;
         }
 
-        public string Substring(int offset, int length)
-        {
-            return _buffer.Substring(_offset + offset, length);
-        }
+        public string Substring(int offset, int length) =>
+            _buffer.Substring(_offset + offset, length);
 
-        public StringSegment Subsegment(int offset, int length)
-        {
-            return new StringSegment(_buffer, _offset + offset, length);
-        }
+        public StringSegment Subsegment(int offset, int length) =>
+            new StringSegment(_buffer, _offset + offset, length);
 
-        public override string ToString()
-        {
-            return Value ?? string.Empty;
-        }
+        public override string ToString() => Value ?? string.Empty;
     }
 
     internal static partial class OwinHelpers
     {
-        private static readonly Action<string, string, object> AddCookieCallback = (name, value, state) =>
-        {
-            var dictionary = (IDictionary<string, string>)state;
-            if (!dictionary.ContainsKey(name))
-            {
-                dictionary.Add(name, value);
-            }
-        };
-
-        private static readonly char[] SemicolonAndComma = new[] { ';', ',' };
-
-        internal static IDictionary<string, string> GetCookies(IOwinRequest request)
-        {
-            var cookies = request.Get<IDictionary<string, string>>("Microsoft.Owin.Cookies#dictionary");
-            if (cookies == null)
-            {
-                cookies = new Dictionary<string, string>(StringComparer.Ordinal);
-                request.Set("Microsoft.Owin.Cookies#dictionary", cookies);
-            }
-
-            string text = GetHeader(request.Headers, "Cookie");
-            if (request.Get<string>("Microsoft.Owin.Cookies#text") != text)
-            {
-                cookies.Clear();
-                ParseDelimited(text, SemicolonAndComma, AddCookieCallback, cookies);
-                request.Set("Microsoft.Owin.Cookies#text", text);
-            }
-            return cookies;
-        }
-
         internal static void ParseDelimited(string text, char[] delimiters, Action<string, string, object> callback, object state)
         {
             int textLength = text.Length;
@@ -573,10 +487,7 @@ namespace Microsoft.Owin.Infrastructure
                 scanIndex = delimiterIndex + 1;
             }
         }
-    }
 
-    internal static partial class OwinHelpers
-    {
         public static string GetHeader(IDictionary<string, string[]> headers, string key)
         {
             string[] values = GetHeaderUnmodified(headers, key);
@@ -764,10 +675,7 @@ namespace Microsoft.Owin.Infrastructure
                 SetHeaderUnmodified(headers, key, existing.Concat(values));
             }
         }
-    }
 
-    internal static partial class OwinHelpers
-    {
         private static readonly Action<string, string, object> AppendItemCallback = (name, value, state) =>
         {
             var dictionary = (IDictionary<string, List<String>>)state;
@@ -785,7 +693,7 @@ namespace Microsoft.Owin.Infrastructure
 
         private static readonly char[] AmpersandAndSemicolon = new[] { '&', ';' };
 
-        internal static IDictionary<string, string[]> GetQuery(IOwinRequest request)
+        internal static IDictionary<string, string[]> GetQuery(OwinRequest request)
         {
             var query = request.Get<IDictionary<string, string[]>>("Microsoft.Owin.Query#dictionary");
             if (query == null)
@@ -809,18 +717,6 @@ namespace Microsoft.Owin.Infrastructure
             return query;
         }
 
-        internal static IFormCollection GetForm(string text)
-        {
-            IDictionary<string, string[]> form = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
-            var accumulator = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-            ParseDelimited(text, new[] { '&' }, AppendItemCallback, accumulator);
-            foreach (var kv in accumulator)
-            {
-                form.Add(kv.Key, kv.Value.ToArray());
-            }
-            return new FormCollection(form);
-        }
-
         internal static string GetJoinedValue(IDictionary<string, string[]> store, string key)
         {
             string[] values = GetUnmodifiedValues(store, key);
@@ -836,13 +732,10 @@ namespace Microsoft.Owin.Infrastructure
             string[] values;
             return store.TryGetValue(key, out values) ? values : null;
         }
-    }
 
-    internal static partial class OwinHelpers
-    {
-        internal static string GetHost(IOwinRequest request)
+        internal static string GetHost(OwinRequest request)
         {
-            IHeaderDictionary headers = request.Headers;
+            var headers = request.Headers;
 
             string host = GetHeader(headers, "Host");
             if (!string.IsNullOrWhiteSpace(host))
