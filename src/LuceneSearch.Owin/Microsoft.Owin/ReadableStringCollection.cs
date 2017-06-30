@@ -11,7 +11,7 @@ namespace Microsoft.Owin
     /// <summary>
     /// Accessors for query, forms, etc.
     /// </summary>
-    public class ReadableStringCollection : IEnumerable<KeyValuePair<string, string[]>>
+    internal class ReadableStringCollection : IEnumerable<KeyValuePair<string, string[]>>
     {
         /// <summary>
         /// Create a new wrapper

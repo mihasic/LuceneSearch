@@ -448,7 +448,7 @@ namespace Microsoft.Owin.Infrastructure
         public override string ToString() => Value ?? string.Empty;
     }
 
-    internal static partial class OwinHelpers
+    internal static class OwinHelpers
     {
         internal static void ParseDelimited(string text, char[] delimiters, Action<string, string, object> callback, object state)
         {
