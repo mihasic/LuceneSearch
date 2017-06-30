@@ -28,9 +28,9 @@ namespace Microsoft.Owin
         /// <param name="value">The unescaped path to be assigned to the Value property.</param>
         public PathString(string value)
         {
-            if (!String.IsNullOrEmpty(value) && value[0] != '/')
+            if (!string.IsNullOrEmpty(value) && value[0] != '/')
             {
-                throw new ArgumentException(Resources.Exception_PathMustStartWithSlash, "value");
+                throw new ArgumentException("The path must start with a '/' followed by one or more characters.", nameof(value));
             }
             _value = value;
         }
