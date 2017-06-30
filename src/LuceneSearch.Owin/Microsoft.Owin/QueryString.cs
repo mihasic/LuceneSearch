@@ -83,7 +83,7 @@ namespace Microsoft.Owin
             }
             if (uriComponent[0] != '?')
             {
-                throw new ArgumentException(Resources.Exception_QueryStringMustStartWithDelimiter, "uriComponent");
+                throw new ArgumentException("The query string must start with a '?' unless null or empty.", nameof(uriComponent));
             }
             return new QueryString(uriComponent.Substring(1));
         }

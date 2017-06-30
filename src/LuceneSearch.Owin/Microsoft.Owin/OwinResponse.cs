@@ -176,7 +176,7 @@ namespace Microsoft.Owin
             var onSendingHeaders = Get<Action<Action<object>, object>>(OwinConstants.CommonKeys.OnSendingHeaders);
             if (onSendingHeaders == null)
             {
-                throw new NotSupportedException(Resources.Exception_MissingOnSendingHeaders);
+                throw new NotSupportedException("The OWIN key 'server.OnSendingHeaders' is not available for this request.");
             }
             onSendingHeaders(callback, state);
         }
