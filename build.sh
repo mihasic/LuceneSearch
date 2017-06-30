@@ -1,4 +1,7 @@
 #!/bin/bash
+set -E
+trap '[ "$?" = 0 ] || exit $?' ERR
+
 if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
   # This is due to: https://github.com/NuGet/Home/issues/2163#issue-135917905
   echo "current ulimit is: `ulimit -n`..."
@@ -7,19 +10,19 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
 fi
 
 for f in src/**/*.csproj; do
-    $(cd `dirname $f`; dotnet restore) || exit $?
+    (cd `dirname $f`; dotnet restore)
 done
 for f in src/**/*.csproj; do
-    $(cd `dirname $f`; dotnet build) || exit $?
+    (cd `dirname $f`; dotnet build)
 done
 
 for f in test/**/*.csproj; do
-    $(cd `dirname $f`; dotnet restore && dotnet build;
-     if [[ `basename $f` =~ Tests ]]; then
+    (cd `dirname $f`; dotnet restore; dotnet build
+    if [[ `basename $f` =~ Tests ]]; then
         dotnet test;
-     fi ) || exit $?
+    fi )
 done
 
 for f in src/**/*.csproj; do
-    $(cd `dirname $f`; dotnet pack) || exit $?
+    (cd `dirname $f`; dotnet pack)
 done
