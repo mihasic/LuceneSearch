@@ -1,3 +1,7 @@
+param(
+    $Configuration = 'Release'
+)
+
 $DotNetChannel = "preview";
 $DotNetVersion = "1.0.4";
 $DotNetInstallerUri = "https://raw.githubusercontent.com/dotnet/cli/rel/1.1.0/scripts/obtain/dotnet-install.ps1";
@@ -75,7 +79,7 @@ Get-ChildItem src -Recurse -Filter *.csproj | ForEach-Object {
 }
 Get-ChildItem src -Recurse -Filter *.csproj | ForEach-Object {
     Push-Location $_.DirectoryName
-    Invoke-Expression "dotnet build"
+    Invoke-Expression "dotnet build -c $Configuration"
     if($LASTEXITCODE -ne 0) {
         Pop-Location;
         Pop-Location;
@@ -91,14 +95,14 @@ Get-ChildItem test -Recurse -Filter *.csproj | ForEach-Object {
         Pop-Location;
         exit $LASTEXITCODE;
     }
-    Invoke-Expression "dotnet build"
+    Invoke-Expression "dotnet build -c $Configuration"
     if($LASTEXITCODE -ne 0) {
         Pop-Location;
         Pop-Location;
         exit $LASTEXITCODE;
     }
     if($_.Name -cmatch "Tests") {
-        Invoke-Expression "dotnet test"
+        Invoke-Expression "dotnet test -c $Configuration"
         if($LASTEXITCODE -ne 0) {
             Pop-Location;
             Pop-Location;
@@ -110,7 +114,7 @@ Get-ChildItem test -Recurse -Filter *.csproj | ForEach-Object {
 
 Get-ChildItem src -Recurse -Filter *.csproj | ForEach-Object {
     Push-Location $_.DirectoryName
-    Invoke-Expression "dotnet pack"
+    Invoke-Expression "dotnet pack -c $Configuration -o $PSScriptRoot\artifacts"
     if($LASTEXITCODE -ne 0) {
         Pop-Location;
         Pop-Location;
