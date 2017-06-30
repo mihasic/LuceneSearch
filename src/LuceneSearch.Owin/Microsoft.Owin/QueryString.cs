@@ -40,18 +40,12 @@ namespace Microsoft.Owin
         /// <summary>
         /// The escaped query string without the leading '?' character
         /// </summary>
-        public string Value
-        {
-            get { return _value; }
-        }
+        public string Value => _value;
 
         /// <summary>
         /// True if the query string is not empty
         /// </summary>
-        public bool HasValue
-        {
-            get { return !String.IsNullOrWhiteSpace(_value); }
-        }
+        public bool HasValue => !string.IsNullOrWhiteSpace(_value);
 
         /// <summary>
         /// Provides the query string escaped in a way which is correct for combining into the URI representation. 
@@ -59,10 +53,7 @@ namespace Microsoft.Owin
         /// dangerous are escaped.
         /// </summary>
         /// <returns>The query string value</returns>
-        public override string ToString()
-        {
-            return ToUriComponent();
-        }
+        public override string ToString() => ToUriComponent();
 
         /// <summary>
         /// Provides the query string escaped in a way which is correct for combining into the URI representation. 
@@ -116,10 +107,7 @@ namespace Microsoft.Owin
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public bool Equals(QueryString other)
-        {
-            return string.Equals(_value, other._value);
-        }
+        public bool Equals(QueryString other) => string.Equals(_value, other._value);
 
         /// <summary>
         /// Indicates whether the current instance is equal to the other instance.
@@ -139,10 +127,7 @@ namespace Microsoft.Owin
         /// Returns the hash code for this instance.
         /// </summary>
         /// <returns></returns>
-        public override int GetHashCode()
-        {
-            return (_value != null ? _value.GetHashCode() : 0);
-        }
+        public override int GetHashCode() => (_value != null ? _value.GetHashCode() : 0);
 
         /// <summary>
         /// Compares the two instances for equality.
@@ -150,10 +135,7 @@ namespace Microsoft.Owin
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static bool operator ==(QueryString left, QueryString right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(QueryString left, QueryString right) => left.Equals(right);
 
         /// <summary>
         /// Compares the two instances for inequality.
@@ -161,9 +143,6 @@ namespace Microsoft.Owin
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static bool operator !=(QueryString left, QueryString right)
-        {
-            return !left.Equals(right);
-        }
+        public static bool operator !=(QueryString left, QueryString right) => !left.Equals(right);
     }
 }

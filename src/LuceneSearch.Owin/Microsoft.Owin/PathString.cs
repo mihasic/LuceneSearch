@@ -38,27 +38,18 @@ namespace Microsoft.Owin
         /// <summary>
         /// The unescaped path value
         /// </summary>
-        public string Value
-        {
-            get { return _value; }
-        }
+        public string Value => _value;
 
         /// <summary>
         /// True if the path is not empty
         /// </summary>
-        public bool HasValue
-        {
-            get { return !String.IsNullOrEmpty(_value); }
-        }
+        public bool HasValue => !string.IsNullOrEmpty(_value);
 
         /// <summary>
         /// Provides the path string escaped in a way which is correct for combining into the URI representation. 
         /// </summary>
         /// <returns>The escaped path value</returns>
-        public override string ToString()
-        {
-            return ToUriComponent();
-        }
+        public override string ToString() => ToUriComponent();
 
         /// <summary>
         /// Provides the path string escaped in a way which is correct for combining into the URI representation.

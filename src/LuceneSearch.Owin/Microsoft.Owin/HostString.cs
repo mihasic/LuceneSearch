@@ -28,19 +28,13 @@ namespace Microsoft.Owin
         /// <summary>
         /// Returns the original value from the constructor.
         /// </summary>
-        public string Value
-        {
-            get { return _value; }
-        }
+        public string Value => _value;
 
         /// <summary>
         /// Returns the value as normalized by ToUriComponent().
         /// </summary>
         /// <returns></returns>
-        public override string ToString()
-        {
-            return ToUriComponent();
-        }
+        public override string ToString() => ToUriComponent();
 
         /// <summary>
         /// Returns the value properly formatted and encoded for use in a URI in a HTTP header.
@@ -145,10 +139,8 @@ namespace Microsoft.Owin
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public bool Equals(HostString other)
-        {
-            return string.Equals(_value, other._value, StringComparison.OrdinalIgnoreCase);
-        }
+        public bool Equals(HostString other) =>
+            string.Equals(_value, other._value, StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// Compares against the given object only if it is a HostString.
@@ -168,10 +160,8 @@ namespace Microsoft.Owin
         /// Gets a hash code for the value.
         /// </summary>
         /// <returns></returns>
-        public override int GetHashCode()
-        {
-            return (_value != null ? StringComparer.OrdinalIgnoreCase.GetHashCode(_value) : 0);
-        }
+        public override int GetHashCode() =>
+            (_value != null ? StringComparer.OrdinalIgnoreCase.GetHashCode(_value) : 0);
 
         /// <summary>
         /// Compares the two instances for equality.
@@ -179,10 +169,7 @@ namespace Microsoft.Owin
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static bool operator ==(HostString left, HostString right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(HostString left, HostString right) => left.Equals(right);
 
         /// <summary>
         /// Compares the two instances for inequality.
@@ -190,9 +177,6 @@ namespace Microsoft.Owin
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static bool operator !=(HostString left, HostString right)
-        {
-            return !left.Equals(right);
-        }
+        public static bool operator !=(HostString left, HostString right) => !left.Equals(right);
     }
 }

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +15,7 @@ namespace Microsoft.Owin
     /// <summary>
     /// This wraps OWIN environment dictionary and provides strongly typed accessors.
     /// </summary>
-    public class OwinRequest : IOwinRequest
+    internal class OwinRequest
     {
         /// <summary>
         /// Create a new context with only request and response header collections.
@@ -47,22 +46,19 @@ namespace Microsoft.Owin
         /// Gets the OWIN environment.
         /// </summary>
         /// <returns>The OWIN environment.</returns>
-        public virtual IDictionary<string, object> Environment { get; private set; }
+        public IDictionary<string, object> Environment { get; private set; }
 
         /// <summary>
         /// Gets the request context.
         /// </summary>
         /// <returns>The request context.</returns>
-        public virtual IOwinContext Context
-        {
-            get { return new OwinContext(Environment); }
-        }
+        public OwinContext Context => new OwinContext(Environment);
 
         /// <summary>
         /// Gets or set the HTTP method.
         /// </summary>
         /// <returns>The HTTP method.</returns>
-        public virtual string Method
+        public string Method
         {
             get { return Get<string>(OwinConstants.RequestMethod); }
             set { Set(OwinConstants.RequestMethod, value); }
@@ -72,7 +68,7 @@ namespace Microsoft.Owin
         /// Gets or set the HTTP request scheme from owin.RequestScheme.
         /// </summary>
         /// <returns>The HTTP request scheme from owin.RequestScheme.</returns>
-        public virtual string Scheme
+        public string Scheme
         {
             get { return Get<string>(OwinConstants.RequestScheme); }
             set { Set(OwinConstants.RequestScheme, value); }
@@ -82,16 +78,13 @@ namespace Microsoft.Owin
         /// Returns true if the owin.RequestScheme is https.
         /// </summary>
         /// <returns>true if this request is using https; otherwise, false.</returns>
-        public virtual bool IsSecure
-        {
-            get { return string.Equals(Scheme, Constants.Https, StringComparison.OrdinalIgnoreCase); }
-        }
+        public bool IsSecure => string.Equals(Scheme, Constants.Https, StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets or set the Host header. May include the port.
         /// </summary>
         /// <return>The Host header.</return>
-        public virtual HostString Host
+        public HostString Host
         {
             get { return new HostString(OwinHelpers.GetHost(this)); }
             set { OwinHelpers.SetHeader(RawHeaders, Constants.Headers.Host, value.Value); }
@@ -101,7 +94,7 @@ namespace Microsoft.Owin
         /// Gets or set the owin.RequestPathBase.
         /// </summary>
         /// <returns>The owin.RequestPathBase.</returns>
-        public virtual PathString PathBase
+        public PathString PathBase
         {
             get { return new PathString(Get<string>(OwinConstants.RequestPathBase)); }
             set { Set(OwinConstants.RequestPathBase, value.Value); }
@@ -111,7 +104,7 @@ namespace Microsoft.Owin
         /// Gets or set the request path from owin.RequestPath.
         /// </summary>
         /// <returns>The request path from owin.RequestPath.</returns>
-        public virtual PathString Path
+        public PathString Path
         {
             get { return new PathString(Get<string>(OwinConstants.RequestPath)); }
             set { Set(OwinConstants.RequestPath, value.Value); }
@@ -121,7 +114,7 @@ namespace Microsoft.Owin
         /// Gets or set the query string from owin.RequestQueryString.
         /// </summary>
         /// <returns>The query string from owin.RequestQueryString.</returns>
-        public virtual QueryString QueryString
+        public QueryString QueryString
         {
             get { return new QueryString(Get<string>(OwinConstants.RequestQueryString)); }
             set { Set(OwinConstants.RequestQueryString, value.Value); }
@@ -131,25 +124,19 @@ namespace Microsoft.Owin
         /// Gets the query value collection parsed from owin.RequestQueryString.
         /// </summary>
         /// <returns>The query value collection parsed from owin.RequestQueryString.</returns>
-        public virtual IReadableStringCollection Query
-        {
-            get { return new ReadableStringCollection(OwinHelpers.GetQuery(this)); }
-        }
+        public ReadableStringCollection Query => new ReadableStringCollection(OwinHelpers.GetQuery(this));
 
         /// <summary>
         /// Gets the uniform resource identifier (URI) associated with the request.
         /// </summary>
         /// <returns>The uniform resource identifier (URI) associated with the request.</returns>
-        public virtual Uri Uri
-        {
-            get { return new Uri(Scheme + "://" + Host + PathBase + Path + QueryString); }
-        }
+        public Uri Uri => new Uri(Scheme + "://" + Host + PathBase + Path + QueryString);
 
         /// <summary>
         /// Gets or set the owin.RequestProtocol.
         /// </summary>
         /// <returns>The owin.RequestProtocol.</returns>
-        public virtual string Protocol
+        public string Protocol
         {
             get { return Get<string>(OwinConstants.RequestProtocol); }
             set { Set(OwinConstants.RequestProtocol, value); }
@@ -159,30 +146,15 @@ namespace Microsoft.Owin
         /// Gets the request headers.
         /// </summary>
         /// <returns>The request headers.</returns>
-        public virtual IHeaderDictionary Headers
-        {
-            get { return new HeaderDictionary(RawHeaders); }
-        }
+        public HeaderDictionary Headers => new HeaderDictionary(RawHeaders);
 
-        private IDictionary<string, string[]> RawHeaders
-        {
-            get { return Get<IDictionary<string, string[]>>(OwinConstants.RequestHeaders); }
-        }
-
-        /// <summary>
-        /// Gets the collection of Cookies for this request.
-        /// </summary>
-        /// <returns>The collection of Cookies for this request.</returns>
-        public RequestCookieCollection Cookies
-        {
-            get { return new RequestCookieCollection(OwinHelpers.GetCookies(this)); }
-        }
+        private IDictionary<string, string[]> RawHeaders => Get<IDictionary<string, string[]>>(OwinConstants.RequestHeaders);
 
         /// <summary>
         /// Gets or sets the Content-Type header.
         /// </summary>
         /// <returns>The Content-Type header.</returns>
-        public virtual string ContentType
+        public string ContentType
         {
             get { return OwinHelpers.GetHeader(RawHeaders, Constants.Headers.ContentType); }
             set { OwinHelpers.SetHeader(RawHeaders, Constants.Headers.ContentType, value); }
@@ -192,7 +164,7 @@ namespace Microsoft.Owin
         /// Gets or sets the Cache-Control header.
         /// </summary>
         /// <returns>The Cache-Control header.</returns>
-        public virtual string CacheControl
+        public string CacheControl
         {
             get { return OwinHelpers.GetHeader(RawHeaders, Constants.Headers.CacheControl); }
             set { OwinHelpers.SetHeader(RawHeaders, Constants.Headers.CacheControl, value); }
@@ -202,7 +174,7 @@ namespace Microsoft.Owin
         /// Gets or sets the Media-Type header.
         /// </summary>
         /// <returns>The Media-Type header.</returns>
-        public virtual string MediaType
+        public string MediaType
         {
             get { return OwinHelpers.GetHeader(RawHeaders, Constants.Headers.MediaType); }
             set { OwinHelpers.SetHeader(RawHeaders, Constants.Headers.MediaType, value); }
@@ -212,7 +184,7 @@ namespace Microsoft.Owin
         /// Gets or set the Accept header.
         /// </summary>
         /// <returns>The Accept header.</returns>
-        public virtual string Accept
+        public string Accept
         {
             get { return OwinHelpers.GetHeader(RawHeaders, Constants.Headers.Accept); }
             set { OwinHelpers.SetHeader(RawHeaders, Constants.Headers.Accept, value); }
@@ -222,7 +194,7 @@ namespace Microsoft.Owin
         /// Gets or set the owin.RequestBody Stream.
         /// </summary>
         /// <returns>The owin.RequestBody Stream.</returns>
-        public virtual Stream Body
+        public Stream Body
         {
             get { return Get<Stream>(OwinConstants.RequestBody); }
             set { Set(OwinConstants.RequestBody, value); }
@@ -232,7 +204,7 @@ namespace Microsoft.Owin
         /// Gets or sets the cancellation token for the request.
         /// </summary>
         /// <returns>The cancellation token for the request.</returns>
-        public virtual CancellationToken CallCancelled
+        public CancellationToken CallCancelled
         {
             get { return Get<CancellationToken>(OwinConstants.CallCancelled); }
             set { Set(OwinConstants.CallCancelled, value); }
@@ -242,7 +214,7 @@ namespace Microsoft.Owin
         /// Gets or set the server.LocalIpAddress.
         /// </summary>
         /// <returns>The server.LocalIpAddress.</returns>
-        public virtual string LocalIpAddress
+        public string LocalIpAddress
         {
             get { return Get<string>(OwinConstants.CommonKeys.LocalIpAddress); }
             set { Set(OwinConstants.CommonKeys.LocalIpAddress, value); }
@@ -252,7 +224,7 @@ namespace Microsoft.Owin
         /// Gets or set the server.LocalPort.
         /// </summary>
         /// <returns>The server.LocalPort.</returns>
-        public virtual int? LocalPort
+        public int? LocalPort
         {
             get
             {
@@ -286,7 +258,7 @@ namespace Microsoft.Owin
         /// Gets or set the server.RemoteIpAddress.
         /// </summary>
         /// <returns>The server.RemoteIpAddress.</returns>
-        public virtual string RemoteIpAddress
+        public string RemoteIpAddress
         {
             get { return Get<string>(OwinConstants.CommonKeys.RemoteIpAddress); }
             set { Set(OwinConstants.CommonKeys.RemoteIpAddress, value); }
@@ -296,7 +268,7 @@ namespace Microsoft.Owin
         /// Gets or set the server.RemotePort.
         /// </summary>
         /// <returns>The server.RemotePort.</returns>
-        public virtual int? RemotePort
+        public int? RemotePort
         {
             get
             {
@@ -327,44 +299,12 @@ namespace Microsoft.Owin
         }
 
         /// <summary>
-        /// Gets or set the server.User.
-        /// </summary>
-        /// <returns>The server.User.</returns>
-        public virtual IPrincipal User
-        {
-            get { return Get<IPrincipal>(OwinConstants.Security.User); }
-            set { Set(OwinConstants.Security.User, value); }
-        }
-
-        /// <summary>
-        /// Asynchronously reads and parses the request body as a form.
-        /// </summary>
-        /// <returns>The parsed form data.</returns>
-        public async Task<IFormCollection> ReadFormAsync()
-        {
-            var form = Get<IFormCollection>("Microsoft.Owin.Form#collection");
-            if (form == null)
-            {
-                string text;
-                // Don't close, it prevents re-winding.
-                using (var reader = new StreamReader(Body, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 4 * 1024, leaveOpen: true))
-                {
-                    text = await reader.ReadToEndAsync();
-                }
-                form = OwinHelpers.GetForm(text);
-                Set("Microsoft.Owin.Form#collection", form);
-            }
-
-            return form;
-        }
-
-        /// <summary>
         /// Gets a value from the OWIN environment, or returns default(T) if not present.
         /// </summary>
         /// <typeparam name="T">The type of the value.</typeparam>
         /// <param name="key">The key of the value to get.</param>
         /// <returns>The value with the specified key or the default(T) if not present.</returns>
-        public virtual T Get<T>(string key)
+        public T Get<T>(string key)
         {
             object value;
             return Environment.TryGetValue(key, out value) ? (T)value : default(T);
@@ -377,7 +317,7 @@ namespace Microsoft.Owin
         /// <param name="key">The key of the value to set.</param>
         /// <param name="value">The value to set.</param>
         /// <returns>This instance.</returns>
-        public virtual IOwinRequest Set<T>(string key, T value)
+        public OwinRequest Set<T>(string key, T value)
         {
             Environment[key] = value;
             return this;
