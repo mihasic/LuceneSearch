@@ -8,8 +8,10 @@ namespace LuceneSearch
     {
         public static Query Wildcard(string name, string value) =>
             new WildcardQuery(new Term(name, new BytesRef(value)));
+
         public static Query Term(string name, string value) =>
             new TermQuery(new Term(name, new BytesRef(value)));
+
         public static Query BooleanAnd(params Query[] queries)
         {
             if (queries.Length == 1) return queries[0];
@@ -21,6 +23,7 @@ namespace LuceneSearch
             }
             return query;
         }
+
         public static Query BooleanOr(params Query[] queries)
         {
             if (queries.Length == 1) return queries[0];
@@ -32,6 +35,5 @@ namespace LuceneSearch
             }
             return query;
         }
-        
     }
 }
