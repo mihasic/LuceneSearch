@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Net;
@@ -37,7 +38,7 @@
                     {
                         app.UseDeveloperExceptionPage();
                     }
-
+                    Console.WriteLine("Loading documents...");
                     app.Map("/api", a => a.Use(ConfigureMiddleware(needLoad, dataDirectory)));
 
                     app.UseDefaultFiles();
@@ -67,7 +68,7 @@
                     new P("key", (string)doc.key),
                     new P("name", (string)doc.name),
                     new P("personal_name", (string)doc.personal_name),
-                    new P("last_modified", (string)doc.last_modified.value),
+                    new P("last_modified", DateTime.Parse((string)doc.last_modified.value, new CultureInfo("en-US")).ToString("s")),
                     new P("revision", (string)doc.revision),
                     new P("name_f", (string)doc.name),
                     new P("personal_name_f", (string)doc.personal_name),
@@ -81,7 +82,7 @@
                 new Field("name"),
                 new Field("personal_name"),
                 new Field("last_modified"),
-                new Field("revision"),
+                new Field("revision", numeric: true),
                 new Field("name_f", fullText: true),
                 new Field("personal_name_f", fullText: true),
                 new Field("__src", resultOnly: true)

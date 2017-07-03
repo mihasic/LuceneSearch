@@ -177,6 +177,7 @@ namespace LuceneSearch
 
         public IEnumerable<string> GetTerms(
             string termName,
+            bool prefix = false,
             string from = null,
             int? take = null,
             CancellationToken cancellationToken = default(CancellationToken))
@@ -190,7 +191,9 @@ namespace LuceneSearch
                 var termsEnum = terms.GetIterator(null);
                 BytesRef term;
                 if (from != null) {
-                    termsEnum = new PrefixTermsEnum(termsEnum, new BytesRef(from));
+                    termsEnum = prefix
+                        ? (TermsEnum) new PrefixTermsEnum(termsEnum, new BytesRef(from))
+                        : new TermRangeTermsEnum(termsEnum, new BytesRef(from), null, true, false);
                 }
                 bool skip = from != null;
                 int count = 0;
