@@ -21,7 +21,6 @@ namespace LuceneSearch
         private readonly Analyzer _analyzer;
         private readonly IDisposable _disposable;
         private readonly Dictionary<string, Func<string, IIndexableField>> _mapping;
-
         private IndexWriter _writer;
 
         private IndexWriter Writer =>
@@ -69,21 +68,6 @@ namespace LuceneSearch
             return count;
         }
 
-        public Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> Search(
-            IDictionary<string, IReadOnlyCollection<string>> filters,
-            int take = 128,
-            int skip = 0,
-            string sort = null,
-            ISet<string> fieldsToLoad = null)
-        {
-            var queries =
-                from filter in filters
-                let valueQueries = filter.Value.Select(v => QueryHelper.Wildcard(filter.Key, v)).ToArray()
-                select QueryHelper.BooleanOr(valueQueries);
-            var mainQuery = QueryHelper.BooleanAnd(queries.ToArray());
-            return QuerySearch(mainQuery, take, skip, sort, fieldsToLoad);
-        }
-
         public IReadOnlyCollection<KeyValuePair<string, string>> GetByTerm(string name, string value)
         {
             var searcher = _sm.Value.Acquire();
@@ -102,12 +86,14 @@ namespace LuceneSearch
                 _sm.Value.Release(searcher);
             }
         }
+
         public void DeleteByTerm(string name, string value, bool commit = true)
         {
             var ixw = Writer;
             ixw.DeleteDocuments(new Term(name, new BytesRef(value)));
             if (commit) ixw.Commit();
         }
+
         public void UpdateByTerm(string name, string value, IEnumerable<KeyValuePair<string, string>> doc, bool commit = true)
         {
             var ixw = Writer;
@@ -123,20 +109,51 @@ namespace LuceneSearch
         public void Commit() => Writer.Commit();
 
         public Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> Search(
+            IDictionary<string, IReadOnlyCollection<string>> filters,
+            int take = 128,
+            int skip = 0,
+            string sort = null,
+            ISet<string> fieldsToLoad = null) =>
+            QuerySearch(QueryHelper.BooleanAnd(Parse(filters).ToArray()), take, skip, sort, fieldsToLoad);
+
+        public Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> Search(
             string query,
+            IDictionary<string, IReadOnlyCollection<string>> filters,
             int take = 128,
             int skip = 0,
             string sort = null,
             ISet<string> fieldsToLoad = null)
         {
-            var parser = new QueryParser(LuceneVersion.LUCENE_48, _mapping.Keys.First(), _analyzer);
-            parser.AllowLeadingWildcard = true;
-            parser.LowercaseExpandedTerms = false;
-            var mainQuery = parser.Parse(query);
+            var queries = Parse(filters);
+            var mainQuery = QueryHelper.BooleanAnd(queries.Concat(new[] { Parse(query) }).ToArray());
             return QuerySearch(mainQuery, take, skip, sort, fieldsToLoad);
         }
 
-        private Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> QuerySearch(Query mainQuery, int take, int skip, string sort, ISet<string> fieldsToLoad)
+        private Query Parse(string query)
+        {
+            var parser = new QueryParser(LuceneVersion.LUCENE_48, _mapping.Keys.First(), _analyzer);
+            parser.AllowLeadingWildcard = true;
+            parser.LowercaseExpandedTerms = false;
+            return parser.Parse(query);
+        }
+        private IEnumerable<Query> Parse(IDictionary<string, IReadOnlyCollection<string>> filters) =>
+                from filter in filters
+                let valueQueries = filter.Value.Select(v => QueryHelper.Wildcard(filter.Key, v)).ToArray()
+                select QueryHelper.BooleanOr(valueQueries);
+
+        public Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> Search(
+            string query,
+            int take = 128,
+            int skip = 0,
+            string sort = null,
+            ISet<string> fieldsToLoad = null) => QuerySearch(Parse(query), take, skip, sort, fieldsToLoad);
+
+        private Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> QuerySearch(
+            Query mainQuery,
+            int take,
+            int skip,
+            string sort,
+            ISet<string> fieldsToLoad)
         {
             var sw = Stopwatch.StartNew();
             var searcher = _sm.Value.Acquire();
