@@ -14,7 +14,7 @@ namespace LuceneSearch
 
     public static class SearchMiddleware
     {
-        private static readonly HashSet<string> s_skipped = new HashSet<string>(new[] { "take", "skip" },
+        private static readonly HashSet<string> s_skipped = new HashSet<string>(new[] { "take", "skip", "q", "sort", "i" },
             StringComparer.OrdinalIgnoreCase);
 
         public static Func<AppFunc, AppFunc> Create(Index index)
@@ -41,7 +41,7 @@ namespace LuceneSearch
                     {
                         var q = ctx.Request.Query.GetValues("q").FirstOrDefault();
                         var result = string.IsNullOrEmpty(q)
-                            ? SearchByFilter(index, ctx)
+                            ? SearchByQuery(index, ctx, null)
                             : SearchByQuery(index, ctx, Uri.UnescapeDataString(q));
                         await ReturnSearchResult(result, ctx);
                         return;
@@ -111,25 +111,20 @@ namespace LuceneSearch
             }
         }
 
-        private static Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> SearchByFilter(
-            Index index, OwinContext ctx)
+        private static Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> SearchByQuery(
+            Index index, OwinContext ctx, string query)
         {
             var filters = ctx.Request.Query.Where(x => !s_skipped.Contains(x.Key))
                 .ToDictionary(x => x.Key, x => (IReadOnlyCollection<string>)x.Value.Select(Uri.UnescapeDataString).ToArray());
             var skip = ctx.Request.Query["skip"].ParseInt() ?? 0;
             var take = ctx.Request.Query["take"].ParseInt() ?? 25;
-
-            var result = index.Search(filters, take, skip);
-            return result;
-        }
-
-        private static Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> SearchByQuery(
-            Index index, OwinContext ctx, string query)
-        {
-            var skip = ctx.Request.Query["skip"].ParseInt() ?? 0;
-            var take = ctx.Request.Query["take"].ParseInt() ?? 25;
-
-            var result = index.Search(query, take, skip);
+            var sort = ctx.Request.Query["sort"];
+            var include = new HashSet<string>(ctx.Request.Query.GetValues("i")
+                .SelectMany(x => x.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries)));
+            if (!include.Any()) include = null;
+            var result = string.IsNullOrWhiteSpace(query)
+                ? index.Search(filters, take, skip, sort, include)
+                : index.Search(query, filters, take, skip, sort, include);
             return result;
         }
 
@@ -137,6 +132,7 @@ namespace LuceneSearch
         {
             var result = index.GetTerms(
                 term,
+                ctx.Request.Query["p"].ParseBool() ?? false,
                 ctx.Request.Query["from"],
                 ctx.Request.Query["take"].ParseInt() ?? 100,
                 cancellationToken: ctx.Request.CallCancelled);

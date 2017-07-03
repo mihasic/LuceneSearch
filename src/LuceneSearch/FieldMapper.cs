@@ -12,14 +12,16 @@ namespace LuceneSearch
             mapping.ToDictionary(x => x.Name, x => CreateFactory(x), StringComparer.OrdinalIgnoreCase);
 
         private static Func<string, IIndexableField> CreateFactory(LuceneSearch.Field field) =>
-            (field.FullText)
-                ? (Func<string, IIndexableField>)(val => new TextField(field.Name, val ?? "", Lucene.Net.Documents.Field.Store.YES))
-                : (field.ResultOnly)
-                    ? (Func<string, IIndexableField>)(val => new Lucene.Net.Documents.Field(field.Name, val ?? "", new FieldType
-                      {
-                          IsStored = true,
-                          IndexOptions = IndexOptions.NONE
-                      }))
-                    :(Func<string, IIndexableField>)(val => new StringField(field.Name, val ?? "", Lucene.Net.Documents.Field.Store.YES));
+            (field.Numeric)
+                ? (Func<string, IIndexableField>)(val => new NumericDocValuesField(field.Name, long.Parse(val)))
+                : (field.FullText)
+                    ? (Func<string, IIndexableField>)(val => new TextField(field.Name, val ?? "", Lucene.Net.Documents.Field.Store.YES))
+                    : (field.ResultOnly)
+                        ? (Func<string, IIndexableField>)(val => new Lucene.Net.Documents.Field(field.Name, val ?? "", new FieldType
+                          {
+                              IsStored = true,
+                              IndexOptions = IndexOptions.NONE
+                          }))
+                        : (Func<string, IIndexableField>)(val => new StringField(field.Name, val ?? "", Lucene.Net.Documents.Field.Store.YES));
     }
 }

@@ -268,10 +268,12 @@ __pycache__/
 # tools/
 
 # lucene cache
-src/TestServer/data
-src/TestServer/data*/
+test/TestServer/data
+test/TestServer/data*/
 
 # build tools
 .dotnet
-test/TestServer/data/
-ol_dump_authors_2017-04-30.txt
+
+# other
+ol_dump_authors_*.txt
+ol_dump_authors_*.txt.gz
