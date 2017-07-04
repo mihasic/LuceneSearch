@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <TargetFrameworks>netstandard1.6</TargetFrameworks>
+    <Version>0.1.0</Version>
+    <Authors>M. Rybnikov</Authors>
+    <PackageLicenseUrl>https://github.com/mihasic/LuceneSearch/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/mihasic/LuceneSearch/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mihasic/LuceneSearch/</RepositoryUrl>
+  </PropertyGroup>
+</Project>

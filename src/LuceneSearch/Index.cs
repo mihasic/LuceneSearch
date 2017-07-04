@@ -5,6 +5,7 @@ namespace LuceneSearch
     using System.Diagnostics;
     using System.Globalization;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using System.Threading;
     using Lucene.Net.Analysis;
     using Lucene.Net.Documents;
@@ -129,16 +130,16 @@ namespace LuceneSearch
             return QuerySearch(mainQuery, take, skip, sort, fieldsToLoad);
         }
 
-        private Query Parse(string query)
+        private Query Parse(string query, string fieldName = null)
         {
-            var parser = new QueryParser(LuceneVersion.LUCENE_48, _mapping.Keys.First(), _analyzer);
+            var parser = new QueryParser(LuceneVersion.LUCENE_48, fieldName ?? _mapping.Keys.First(), _analyzer);
             parser.AllowLeadingWildcard = true;
             parser.LowercaseExpandedTerms = false;
             return parser.Parse(query);
         }
         private IEnumerable<Query> Parse(IDictionary<string, IReadOnlyCollection<string>> filters) =>
                 from filter in filters
-                let valueQueries = filter.Value.Select(v => QueryHelper.Wildcard(filter.Key, v)).ToArray()
+                let valueQueries = filter.Value.Select(v => Parse(v, fieldName: filter.Key)).ToArray()
                 select QueryHelper.BooleanOr(valueQueries);
 
         public Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> Search(

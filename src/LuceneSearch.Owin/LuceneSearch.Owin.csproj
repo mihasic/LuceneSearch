@@ -1,8 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\common.props" />
+
   <PropertyGroup>
-    <TargetFramework>netstandard1.6</TargetFramework>
-    <Version>0.1.0</Version>
+    <Title>Lucene OWIN api middleware</Title>
+    <Description>OWIN middleware to provide CRUD and search for Lucene.Net</Description>
   </PropertyGroup>
 
   <ItemGroup>

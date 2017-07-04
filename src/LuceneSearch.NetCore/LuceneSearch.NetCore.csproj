@@ -1,8 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\common.props" />
+
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.6</TargetFrameworks>
-    <Version>0.1.0</Version>
+    <Title>Lucene .net core api middleware</Title>
+    <Description>.net core middleware to provide CRUD and search access for Lucene.Net</Description>
   </PropertyGroup>
 
   <ItemGroup>

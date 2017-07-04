@@ -1,6 +1,8 @@
 namespace LuceneSearch
 {
+    using System.Text.RegularExpressions;
     using Lucene.Net.Index;
+    using Lucene.Net.QueryParsers.Classic;
     using Lucene.Net.Search;
     using Lucene.Net.Util;
 
@@ -8,6 +10,16 @@ namespace LuceneSearch
     {
         public static Query Wildcard(string name, string value) =>
             new WildcardQuery(new Term(name, new BytesRef(value)));
+        public static Query Regexp(string name, string value) =>
+            new RegexpQuery(new Term(name, new BytesRef(value)));
+
+        public static Query Range(
+            string name,
+            string lowerTerm,
+            bool includeLower = true,
+            string upperTerm = null,
+            bool includeUpper = true) =>
+            new TermRangeQuery(name, new BytesRef(lowerTerm), new BytesRef(upperTerm), includeLower, includeUpper);
 
         public static Query Term(string name, string value) =>
             new TermQuery(new Term(name, new BytesRef(value)));

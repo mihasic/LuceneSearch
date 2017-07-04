@@ -1,8 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\common.props" />
+
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.6</TargetFrameworks>
-    <Version>0.1.0</Version>
+    <Title>Lucene .Net high level abstraction/facade</Title>
+    <Description>Facade around lucene for simple use-case scenarios</Description>
   </PropertyGroup>
 
   <ItemGroup>
