@@ -1,0 +1,1 @@
+# LuceneSearch [![Build Status](https://travis-ci.org/mihasic/LuceneSearch.svg?branch=master)](https://travis-ci.org/mihasic/LuceneSearch) [![NuGet](https://img.shields.io/nuget/v/LuceneSearch.svg)](https://www.nuget.org/packages/LuceneSearch/)
