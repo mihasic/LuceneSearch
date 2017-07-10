@@ -14,10 +14,8 @@ namespace LuceneSearch.Tests
         [Fact]
         public async Task NotFound()
         {
-            var dataDirectory = System.IO.Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
-            System.IO.Directory.CreateDirectory(dataDirectory);
             using (var client = new HttpClient(new AspNetCoreHttpMessageHandler(
-                TestServer.Program.ConfigureMiddleware(true, dataDirectory)))
+                TestServer.Program.ConfigureMiddleware(true, "~TEMP")))
                 {
                     BaseAddress = new Uri("http://localhost/")
                 })
@@ -29,10 +27,8 @@ namespace LuceneSearch.Tests
         [Fact]
         public async Task Found()
         {
-            var dataDirectory = System.IO.Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
-            System.IO.Directory.CreateDirectory(dataDirectory);
             using (var client = new HttpClient(new AspNetCoreHttpMessageHandler(
-                TestServer.Program.ConfigureMiddleware(true, dataDirectory)))
+                TestServer.Program.ConfigureMiddleware(true, "~TEMP")))
                 {
                     BaseAddress = new Uri("http://localhost/")
                 })
