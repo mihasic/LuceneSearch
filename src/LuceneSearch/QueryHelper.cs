@@ -13,6 +13,14 @@ namespace LuceneSearch
         public static Query Regexp(string name, string value) =>
             new RegexpQuery(new Term(name, new BytesRef(value)));
 
+        public static bool IsRange(string query)
+        {
+            query = query.Trim();
+            return (query.StartsWith("{") || query.StartsWith("[")) &&
+                (query.EndsWith("}") || query.EndsWith("]")) &&
+                query.ToUpperInvariant().Contains(" TO ");
+        }
+
         public static Query Range(
             string name,
             string lowerTerm,

@@ -22,6 +22,7 @@ namespace LuceneSearch
         private readonly Analyzer _analyzer;
         private readonly IDisposable _disposable;
         private readonly Dictionary<string, Func<string, IIndexableField>> _mapping;
+        private readonly HashSet<string> _termFields;
         private IndexWriter _writer;
 
         private IndexWriter Writer =>
@@ -30,17 +31,18 @@ namespace LuceneSearch
         public Index(string directory, IEnumerable<Field> mapping)
         {
             _mapping = FieldMapper.Create(mapping);
+            _termFields = FieldMapper.GetTermFields(mapping);
             var analyzerMap = mapping
                 .Where(x => !string.IsNullOrEmpty(x.SpecificAnalyzer))
                 .ToDictionary(x => x.Name, x => x.SpecificAnalyzer);
-            var t = PerFieldAnalyzer.Create("StandardAnalyzer", analyzerMap);
-            _analyzer = t.Item1;
+            IDisposable d;
+            (_analyzer, d) = PerFieldAnalyzer.Create("StandardAnalyzer", analyzerMap);
             _dir = DirectoryProvider.Create(directory);
             _sm = new Lazy<SearcherManager>(() => new SearcherManager(_dir, null), true);
 
             _disposable = new DelegateDisposable(() =>
             {
-                t.Item2.Dispose();
+                d.Dispose();
                 _writer?.Dispose();
                 _writer = null;
                 if (_sm.IsValueCreated) _sm.Value.Dispose();
@@ -109,7 +111,7 @@ namespace LuceneSearch
 
         public void Commit() => Writer.Commit();
 
-        public Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> Search(
+        public (int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) Search(
             IDictionary<string, IReadOnlyCollection<string>> filters,
             int take = 128,
             int skip = 0,
@@ -117,7 +119,7 @@ namespace LuceneSearch
             ISet<string> fieldsToLoad = null) =>
             QuerySearch(QueryHelper.BooleanAnd(Parse(filters).ToArray()), take, skip, sort, fieldsToLoad);
 
-        public Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> Search(
+        public (int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) Search(
             string query,
             IDictionary<string, IReadOnlyCollection<string>> filters,
             int take = 128,
@@ -132,24 +134,36 @@ namespace LuceneSearch
 
         private Query Parse(string query, string fieldName = null)
         {
-            var parser = new QueryParser(LuceneVersion.LUCENE_48, fieldName ?? _mapping.Keys.First(), _analyzer);
+            var analyzer = _analyzer;
+            if (fieldName != null &&
+                _mapping.ContainsKey(fieldName) &&
+                _termFields.Contains(fieldName) &&
+                !QueryHelper.IsRange(query))
+            {
+                return QueryHelper.Wildcard(fieldName, query);
+            }
+            var parser = new QueryParser(
+                LuceneVersion.LUCENE_48,
+                fieldName ?? _mapping.Keys.First(),
+                _analyzer);
             parser.AllowLeadingWildcard = true;
             parser.LowercaseExpandedTerms = false;
             return parser.Parse(query);
         }
+
         private IEnumerable<Query> Parse(IDictionary<string, IReadOnlyCollection<string>> filters) =>
                 from filter in filters
                 let valueQueries = filter.Value.Select(v => Parse(v, fieldName: filter.Key)).ToArray()
                 select QueryHelper.BooleanOr(valueQueries);
 
-        public Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> Search(
+        public (int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) Search(
             string query,
             int take = 128,
             int skip = 0,
             string sort = null,
             ISet<string> fieldsToLoad = null) => QuerySearch(Parse(query), take, skip, sort, fieldsToLoad);
 
-        private Tuple<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>> QuerySearch(
+        private (int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) QuerySearch(
             Query mainQuery,
             int take,
             int skip,
@@ -168,7 +182,7 @@ namespace LuceneSearch
                     var doc = searcher.Doc(scores[i].Doc, fieldsToLoad);
                     docs.Add(doc.Select(x => new KeyValuePair<string, string>(x.Name, x.GetStringValue())).ToArray());
                 }
-                return Tuple.Create<int, TimeSpan, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>>>(res.TotalHits, sw.Elapsed, docs);
+                return (res.TotalHits, sw.Elapsed, docs);
             }
             finally
             {
@@ -196,16 +210,10 @@ namespace LuceneSearch
                         ? (TermsEnum) new PrefixTermsEnum(termsEnum, new BytesRef(from))
                         : new TermRangeTermsEnum(termsEnum, new BytesRef(from), null, true, false);
                 }
-                bool skip = from != null;
                 int count = 0;
                 while ((term = termsEnum.Next()) != null)
                 {
                     var stringTerm = term.Utf8ToString();
-                    if (skip)
-                    {
-                        skip = string.CompareOrdinal(from, stringTerm) > 0;
-                        continue;
-                    }
                     yield return stringTerm;
                     if (take.HasValue && ++count == take.Value) yield break;
                 }

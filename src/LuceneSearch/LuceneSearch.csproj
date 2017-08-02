@@ -1,18 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\common.props" />
-
   <PropertyGroup>
-    <Title>Lucene .Net high level abstraction/facade</Title>
+    <Title>LuceneSearch - Lucene.Net high level abstraction/facade</Title>
     <Description>Facade around lucene for simple use-case scenarios</Description>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
     <PackageReference Include="Lucene.Net" Version="4.8.0-beta00004" />
     <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00004" />
     <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00004" />
+    <PackageReference Include="System.ValueTuple" Version="4.3.1" />
   </ItemGroup>
-
 </Project>

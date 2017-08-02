@@ -21,18 +21,23 @@
             { "ClassicAnalyzer", () => new Lucene.Net.Analysis.Standard.ClassicAnalyzer(LuceneVersion.LUCENE_48) },
         };
 
-        public static Tuple<Analyzer, IDisposable> Create(string defaultAnalyzer, IDictionary<string, string> fieldAnalyzers)
+        public static (Analyzer analyzer, IDisposable disposable) Create(
+            string defaultAnalyzer,
+            IDictionary<string, string> fieldAnalyzers)
         {
             var analyzers = new ConcurrentDictionary<string, Analyzer>();
             Func<string, Analyzer> getAnalyzer = name => analyzers.GetOrAdd(name, n => s_analyzerMap[n]());
-            Analyzer analyzer = new PerFieldAnalyzerWrapper(getAnalyzer(defaultAnalyzer), fieldAnalyzers.ToDictionary(x => x.Key, x => getAnalyzer(x.Value)));
+            var perFieldAnalyzers = fieldAnalyzers.ToDictionary(x => x.Key, x => getAnalyzer(x.Value));
+            Analyzer analyzer = new PerFieldAnalyzerWrapper(
+                getAnalyzer(defaultAnalyzer),
+                perFieldAnalyzers);
             IDisposable disposable = new DelegateDisposable(() =>
             {
                 analyzer.Dispose();
                 foreach (var a in analyzers.Values)
                     a.Dispose();
             });
-            return Tuple.Create(analyzer, disposable);
+            return (analyzer, disposable);
         }
      }
 }

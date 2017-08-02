@@ -1,21 +1,18 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\common.props" />
-
   <PropertyGroup>
-    <Title>Lucene .net core api middleware</Title>
+    <Title>LuceneSearch - Lucene.net netcore api middleware</Title>
     <Description>.net core middleware to provide CRUD and search access for Lucene.Net</Description>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="1.1.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="System.ValueTuple" Version="4.3.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LuceneSearch\LuceneSearch.csproj" />
   </ItemGroup>
-
 </Project>

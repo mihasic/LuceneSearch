@@ -8,6 +8,13 @@ namespace LuceneSearch
 
     internal static class FieldMapper
     {
+        public static HashSet<string> GetTermFields(IEnumerable<LuceneSearch.Field> mapping) => new HashSet<string>(mapping
+            .Where(x => string.IsNullOrEmpty(x.SpecificAnalyzer))
+            .Where(x => !x.FullText)
+            .Select(x => x.Name),
+            StringComparer.OrdinalIgnoreCase
+        );
+
         public static Dictionary<string, Func<string, IIndexableField>> Create(IEnumerable<LuceneSearch.Field> mapping) =>
             mapping.ToDictionary(x => x.Name, x => CreateFactory(x), StringComparer.OrdinalIgnoreCase);
 
