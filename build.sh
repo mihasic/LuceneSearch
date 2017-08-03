@@ -23,6 +23,6 @@ for f in test/**/*.csproj; do
     fi )
 done
 
-for f in src/**/*.csproj; do
-    (cd `dirname $f`; dotnet pack --no-build)
-done
+# for f in src/**/*.csproj; do
+#     (cd `dirname $f`; dotnet pack --no-build)
+# done
