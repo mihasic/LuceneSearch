@@ -24,5 +24,5 @@ for f in test/**/*.csproj; do
 done
 
 for f in src/**/*.csproj; do
-    (cd `dirname $f`; dotnet pack -f "netstandard1.6")
+    (cd `dirname $f`; dotnet pack --no-build)
 done
