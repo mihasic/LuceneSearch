@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
-    <Version>0.2.1</Version>
+    <Version>0.2.2</Version>
     <Authors>M. Rybnikov</Authors>
     <PackageLicenseUrl>https://github.com/mihasic/LuceneSearch/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/mihasic/LuceneSearch/</PackageProjectUrl>

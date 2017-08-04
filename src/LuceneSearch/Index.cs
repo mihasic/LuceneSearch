@@ -71,6 +71,22 @@ namespace LuceneSearch
             return count;
         }
 
+        public int Count
+        {
+            get
+            {
+                var searcher = _sm.Value.Acquire();
+                try
+                {
+                    return searcher.IndexReader.NumDocs;
+                }
+                finally
+                {
+                    _sm.Value.Release(searcher);
+                }
+            }
+        }
+
         public IReadOnlyCollection<KeyValuePair<string, string>> GetByTerm(string name, string value)
         {
             var searcher = _sm.Value.Acquire();
