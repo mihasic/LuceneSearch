@@ -66,8 +66,7 @@ namespace LuceneSearch
                     count++;
                 }
             }
-            ixw.Commit();
-            if (_sm.IsValueCreated) _sm.Value.MaybeRefreshBlocking();
+            Commit();
             return count;
         }
 
@@ -110,7 +109,7 @@ namespace LuceneSearch
         {
             var ixw = Writer;
             ixw.DeleteDocuments(new Term(name, new BytesRef(value)));
-            if (commit) ixw.Commit();
+            if (commit) Commit();
         }
 
         public void UpdateByTerm(string name, string value, IEnumerable<KeyValuePair<string, string>> doc, bool commit = true)
@@ -122,10 +121,14 @@ namespace LuceneSearch
                 luceneDoc.Add(_mapping[f.Key](f.Value));
             }
             ixw.UpdateDocument(new Term(name, new BytesRef(value)), luceneDoc);
-            if (commit) ixw.Commit();
+            if (commit) Commit();
         }
 
-        public void Commit() => Writer.Commit();
+        public void Commit()
+        {
+            Writer.Commit();
+            if (_sm.IsValueCreated) _sm.Value.MaybeRefreshBlocking();
+        }
 
         public (int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) Search(
             IDictionary<string, IReadOnlyCollection<string>> filters,
