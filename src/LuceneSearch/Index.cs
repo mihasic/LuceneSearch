@@ -15,7 +15,7 @@ namespace LuceneSearch
     using Lucene.Net.Store;
     using Lucene.Net.Util;
 
-    public class Index : IDisposable
+    public partial class Index : IDisposable
     {
         private readonly Directory _dir;
         private readonly Lazy<SearcherManager> _sm;
