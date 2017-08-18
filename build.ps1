@@ -2,9 +2,9 @@ param(
     $Configuration = 'Release'
 )
 
-$DotNetChannel = "preview";
-$DotNetVersion = "1.0.4";
-$DotNetInstallerUri = "https://raw.githubusercontent.com/dotnet/cli/rel/1.1.0/scripts/obtain/dotnet-install.ps1";
+$DotNetChannel = "Current";
+$DotNetVersion = "2.0.0";
+$DotNetInstallerUri = "https://raw.githubusercontent.com/dotnet/cli/release/2.0.0/scripts/obtain/dotnet-install.ps1";
 $NugetUrl = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
 
 # Make sure tools folder exists
