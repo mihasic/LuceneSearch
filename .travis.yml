@@ -8,7 +8,7 @@ matrix:
       mono: none
       dotnet: 2.0.0
     - os: osx
-      osx_image: xcode8
+      osx_image: xcode9
       mono: none
       dotnet: 2.0.0
 
