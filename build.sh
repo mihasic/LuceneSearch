@@ -13,7 +13,7 @@ for f in src/**/*.csproj; do
     (cd `dirname $f`; dotnet restore)
 done
 for f in src/**/*.csproj; do
-    (cd `dirname $f`; dotnet build -f "netstandard1.6")
+    (cd `dirname $f`; dotnet build)
 done
 
 for f in test/**/*.csproj; do
