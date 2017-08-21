@@ -6,6 +6,7 @@
     using System.IO;
     using System.Linq;
     using System.Net;
+    using System.Reflection;
     using System.Threading.Tasks;
     using LuceneSearch;
     using Microsoft.AspNetCore.Builder;
@@ -29,6 +30,7 @@
             }
 
             var host = new WebHostBuilder()
+                .UseApplicationKey(typeof(Program).GetTypeInfo().Assembly.FullName)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureLogging(loggerFactory => loggerFactory.AddConsole())
