@@ -139,6 +139,14 @@ namespace LuceneSearch
             QuerySearch(QueryHelper.BooleanAnd(Parse(filters).ToArray()), take, skip, sort, fieldsToLoad);
 
         public (int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) Search(
+            IndexQuery query,
+            int take = 128,
+            int skip = 0,
+            string sort = null,
+            ISet<string> fieldsToLoad = null) =>
+            QuerySearch(query.Query, take, skip, sort, fieldsToLoad);
+
+        public (int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) Search(
             string query,
             IDictionary<string, IReadOnlyCollection<string>> filters,
             int take = 128,

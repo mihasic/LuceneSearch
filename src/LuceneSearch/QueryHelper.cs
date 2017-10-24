@@ -13,6 +13,9 @@ namespace LuceneSearch
         public static Query Regexp(string name, string value) =>
             new RegexpQuery(new Term(name, new BytesRef(value)));
 
+        public static Query Prefix(string name, string value) =>
+            new PrefixQuery(new Term(name, new BytesRef(value)));
+
         public static bool IsRange(string query)
         {
             query = query.Trim();
