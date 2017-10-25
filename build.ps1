@@ -3,7 +3,7 @@ param(
 )
 
 $DotNetChannel = "Current";
-$DotNetVersion = "2.0.0";
+$DotNetVersion = "2.0.2";
 $DotNetInstallerUri = "https://raw.githubusercontent.com/dotnet/cli/release/2.0.0/scripts/obtain/dotnet-install.ps1";
 $NugetUrl = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
 

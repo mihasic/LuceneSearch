@@ -10,6 +10,9 @@ namespace LuceneSearch
         protected IndexQuery(Query query) =>
             Query = query;
 
+        public override string ToString() =>
+            Query.ToString();
+
         public static IndexQuery All =>
             new IndexQuery(new MatchAllDocsQuery());
         public static IndexQuery Term(string name, string value) =>

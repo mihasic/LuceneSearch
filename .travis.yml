@@ -6,11 +6,11 @@ matrix:
       dist: trusty
       sudo: required
       mono: none
-      dotnet: 2.0.0
+      dotnet: 2.0.2
     - os: osx
       osx_image: xcode9
       mono: none
-      dotnet: 2.0.0
+      dotnet: 2.0.2
 
 before_script:
   - if test "$TRAVIS_OS_NAME" == "linux"; then sudo apt-get install liblmdb-dev; fi

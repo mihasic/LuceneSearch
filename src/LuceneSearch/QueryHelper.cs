@@ -26,11 +26,16 @@ namespace LuceneSearch
 
         public static Query Range(
             string name,
-            string lowerTerm,
+            string lowerTerm = null,
             bool includeLower = true,
             string upperTerm = null,
             bool includeUpper = true) =>
-            new TermRangeQuery(name, new BytesRef(lowerTerm), new BytesRef(upperTerm), includeLower, includeUpper);
+            new TermRangeQuery(
+                name,
+                lowerTerm == null ? null : new BytesRef(lowerTerm),
+                upperTerm == null ? null : new BytesRef(upperTerm),
+                includeLower,
+                includeUpper);
 
         public static Query Term(string name, string value) =>
             new TermQuery(new Term(name, new BytesRef(value)));
