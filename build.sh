@@ -13,16 +13,16 @@ for f in src/**/*.csproj; do
     (cd `dirname $f`; dotnet restore)
 done
 for f in src/**/*.csproj; do
-    (cd `dirname $f`; dotnet build)
+    (cd `dirname $f`; dotnet build -c Release)
 done
 
 for f in test/**/*.csproj; do
-    (cd `dirname $f`; dotnet restore; dotnet build
+    (cd `dirname $f`; dotnet restore; dotnet build -c Release
     if [[ `basename $f` =~ Tests ]]; then
-        dotnet test;
+        dotnet test -c Release;
     fi )
 done
 
 for f in src/**/*.csproj; do
-    (cd `dirname $f`; dotnet pack --no-build)
+    (cd `dirname $f`; dotnet pack --no-build -c Release)
 done
