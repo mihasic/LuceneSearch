@@ -123,8 +123,8 @@ namespace LuceneSearch
                 .SelectMany(x => x.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries)));
             if (!include.Any()) include = null;
             var result = string.IsNullOrWhiteSpace(query)
-                ? index.Search(filters, take, skip, sort, include)
-                : index.Search(query, filters, take, skip, sort, include);
+                ? index.Search(filters, take, skip, sort, false, include)
+                : index.Search(query, filters, take, skip, sort, false, include);
             return result;
         }
 

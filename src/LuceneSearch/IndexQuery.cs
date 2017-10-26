@@ -7,7 +7,7 @@ namespace LuceneSearch
     {
         internal readonly Query Query;
 
-        protected IndexQuery(Query query) =>
+        protected internal IndexQuery(Query query) =>
             Query = query;
 
         public override string ToString() =>

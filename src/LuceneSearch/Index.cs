@@ -135,16 +135,18 @@ namespace LuceneSearch
             int take = 128,
             int skip = 0,
             string sort = null,
+            bool reverseSort = false,
             ISet<string> fieldsToLoad = null) =>
-            QuerySearch(QueryHelper.BooleanAnd(Parse(filters).ToArray()), take, skip, sort, fieldsToLoad);
+            QuerySearch(QueryHelper.BooleanAnd(Parse(filters).ToArray()), take, skip, sort, reverseSort, fieldsToLoad);
 
         public (int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) Search(
             IndexQuery query,
             int take = 128,
             int skip = 0,
             string sort = null,
+            bool reverseSort = false,
             ISet<string> fieldsToLoad = null) =>
-            QuerySearch(query.Query, take, skip, sort, fieldsToLoad);
+            QuerySearch(query.Query, take, skip, sort, reverseSort, fieldsToLoad);
 
         public (int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) Search(
             string query,
@@ -152,12 +154,16 @@ namespace LuceneSearch
             int take = 128,
             int skip = 0,
             string sort = null,
+            bool reverseSort = false,
             ISet<string> fieldsToLoad = null)
         {
             var queries = Parse(filters);
-            var mainQuery = QueryHelper.BooleanAnd(queries.Concat(new[] { Parse(query) }).ToArray());
-            return QuerySearch(mainQuery, take, skip, sort, fieldsToLoad);
+            var mainQuery = QueryHelper.BooleanAnd(queries.Concat(new[] { Parse(query, null) }).ToArray());
+            return QuerySearch(mainQuery, take, skip, sort, reverseSort, fieldsToLoad);
         }
+
+        public IndexQuery Parse(string query) =>
+            new IndexQuery(Parse(query, null));
 
         private Query Parse(string query, string fieldName = null)
         {
@@ -188,20 +194,24 @@ namespace LuceneSearch
             int take = 128,
             int skip = 0,
             string sort = null,
-            ISet<string> fieldsToLoad = null) => QuerySearch(Parse(query), take, skip, sort, fieldsToLoad);
+            bool reverseSort = false,
+            ISet<string> fieldsToLoad = null) => QuerySearch(Parse(query, null), take, skip, sort, reverseSort, fieldsToLoad);
 
         private (int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) QuerySearch(
             Query mainQuery,
             int take,
             int skip,
             string sort,
+            bool reverseSort,
             ISet<string> fieldsToLoad)
         {
             var sw = Stopwatch.StartNew();
             var searcher = _sm.Value.Acquire();
             try
             {
-                var res = sort == null ? searcher.Search(mainQuery, take + skip) : searcher.Search(mainQuery, take + skip, new Sort(new SortField(sort, SortFieldType.STRING)));
+                var res = sort == null
+                    ? searcher.Search(mainQuery, take + skip)
+                    : searcher.Search(mainQuery, take + skip, new Sort(new SortField(sort, SortFieldType.STRING, reverseSort)));
                 var docs = new List<IReadOnlyCollection<KeyValuePair<string, string>>>(take);
                 var scores = res.ScoreDocs;
                 for (int i = skip; i < scores.Length; i++)
