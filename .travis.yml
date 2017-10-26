@@ -12,9 +12,6 @@ matrix:
       mono: none
       dotnet: 2.0.2
 
-before_script:
-  - if test "$TRAVIS_OS_NAME" == "linux"; then sudo apt-get install liblmdb-dev; fi
-
 script:
   - dotnet --info
   - ./build.sh
