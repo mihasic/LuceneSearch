@@ -12,8 +12,8 @@ namespace LuceneSearch
         public BooleanIndexQuery Add(IndexQuery query, bool include = true)
         {
             if (!include && _query.Clauses.Count == 0)
-                _query.Add(new MatchAllDocsQuery(), Occur.SHOULD);
-            _query.Add(query.Query, include ? Occur.SHOULD : Occur.MUST_NOT);
+                _query.Add(new MatchAllDocsQuery(), Occur.MUST);
+            _query.Add(query.Query, include ? Occur.MUST : Occur.MUST_NOT);
             return this;
         }
 
