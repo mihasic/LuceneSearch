@@ -130,7 +130,7 @@ namespace LuceneSearch
             if (_sm.IsValueCreated) _sm.Value.MaybeRefreshBlocking();
         }
 
-        public (int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) Search(
+        public SearchResult Search(
             IDictionary<string, IReadOnlyCollection<string>> filters,
             int take = 128,
             int skip = 0,
@@ -139,7 +139,7 @@ namespace LuceneSearch
             ISet<string> fieldsToLoad = null) =>
             QuerySearch(QueryHelper.BooleanAnd(Parse(filters).ToArray()), take, skip, sort, reverseSort, fieldsToLoad);
 
-        public (int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) Search(
+        public SearchResult Search(
             IndexQuery query,
             int take = 128,
             int skip = 0,
@@ -148,7 +148,7 @@ namespace LuceneSearch
             ISet<string> fieldsToLoad = null) =>
             QuerySearch(query.Query, take, skip, sort, reverseSort, fieldsToLoad);
 
-        public (int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) Search(
+        public SearchResult Search(
             string query,
             IDictionary<string, IReadOnlyCollection<string>> filters,
             int take = 128,
@@ -189,7 +189,7 @@ namespace LuceneSearch
                 let valueQueries = filter.Value.Select(v => Parse(v, fieldName: filter.Key)).ToArray()
                 select QueryHelper.BooleanOr(valueQueries);
 
-        public (int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) Search(
+        public SearchResult Search(
             string query,
             int take = 128,
             int skip = 0,
@@ -197,7 +197,7 @@ namespace LuceneSearch
             bool reverseSort = false,
             ISet<string> fieldsToLoad = null) => QuerySearch(Parse(query, null), take, skip, sort, reverseSort, fieldsToLoad);
 
-        private (int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) QuerySearch(
+        private SearchResult QuerySearch(
             Query mainQuery,
             int take,
             int skip,
@@ -219,7 +219,7 @@ namespace LuceneSearch
                     var doc = searcher.Doc(scores[i].Doc, fieldsToLoad);
                     docs.Add(doc.Select(x => new KeyValuePair<string, string>(x.Name, x.GetStringValue())).ToArray());
                 }
-                return (res.TotalHits, sw.Elapsed, docs);
+                return new SearchResult(res.TotalHits, sw.Elapsed, docs);
             }
             finally
             {

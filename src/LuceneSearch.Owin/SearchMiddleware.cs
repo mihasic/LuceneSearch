@@ -57,7 +57,7 @@ namespace LuceneSearch
             };
         }
 
-        private static async Task ReturnSearchResult((int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) result, OwinContext ctx)
+        private static async Task ReturnSearchResult(SearchResult result, OwinContext ctx)
         {
             var ct = ctx.Request.CallCancelled;
 
@@ -69,14 +69,14 @@ namespace LuceneSearch
                 await writer.WriteStartObjectAsync(ct).ConfigureAwait(false);
 
                 await writer.WritePropertyNameAsync("totalCount", ct).ConfigureAwait(false);
-                await writer.WriteValueAsync(result.total, ct).ConfigureAwait(false);
+                await writer.WriteValueAsync(result.Total, ct).ConfigureAwait(false);
 
                 await writer.WritePropertyNameAsync("elapsed", ct).ConfigureAwait(false);
-                await writer.WriteValueAsync(result.elapsed, ct).ConfigureAwait(false);
+                await writer.WriteValueAsync(result.Elapsed, ct).ConfigureAwait(false);
 
                 await writer.WritePropertyNameAsync("results", ct).ConfigureAwait(false);
                 await writer.WriteStartArrayAsync(ct).ConfigureAwait(false);
-                foreach (var document in result.docs)
+                foreach (var document in result)
                 {
                     if (ct.IsCancellationRequested) return;
                     var obj = document.GroupBy(x => x.Key);
@@ -111,7 +111,7 @@ namespace LuceneSearch
             }
         }
 
-        private static (int total, TimeSpan elapsed, IEnumerable<IReadOnlyCollection<KeyValuePair<string, string>>> docs) SearchByQuery(
+        private static SearchResult SearchByQuery(
             Index index, OwinContext ctx, string query)
         {
             var filters = ctx.Request.Query.Where(x => !s_skipped.Contains(x.Key))
