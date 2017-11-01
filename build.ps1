@@ -67,47 +67,16 @@ if (!(Test-Path $NugetPath)) {
 
 Push-Location
 
-Get-ChildItem src -Recurse -Filter *.csproj | ForEach-Object {
+Invoke-Expression "dotnet restore"
+Invoke-Expression "dotnet build -c $Configuration"
+
+Get-ChildItem test -Recurse -Filter *.Tests.csproj | ForEach-Object {
     Push-Location $_.DirectoryName
-    Invoke-Expression "dotnet restore"
+    Invoke-Expression "dotnet test -c $Configuration"
     if($LASTEXITCODE -ne 0) {
         Pop-Location;
         Pop-Location;
         exit $LASTEXITCODE;
-    }
-    Pop-Location;
-}
-Get-ChildItem src -Recurse -Filter *.csproj | ForEach-Object {
-    Push-Location $_.DirectoryName
-    Invoke-Expression "dotnet build -c $Configuration"
-    if($LASTEXITCODE -ne 0) {
-        Pop-Location;
-        Pop-Location;
-        exit $LASTEXITCODE;
-    }
-    Pop-Location;
-}
-Get-ChildItem test -Recurse -Filter *.csproj | ForEach-Object {
-    Push-Location $_.DirectoryName
-    Invoke-Expression "dotnet restore"
-    if($LASTEXITCODE -ne 0) {
-        Pop-Location;
-        Pop-Location;
-        exit $LASTEXITCODE;
-    }
-    Invoke-Expression "dotnet build -c $Configuration"
-    if($LASTEXITCODE -ne 0) {
-        Pop-Location;
-        Pop-Location;
-        exit $LASTEXITCODE;
-    }
-    if($_.Name -cmatch "Tests") {
-        Invoke-Expression "dotnet test -c $Configuration"
-        if($LASTEXITCODE -ne 0) {
-            Pop-Location;
-            Pop-Location;
-            exit $LASTEXITCODE;
-        }
     }
     Pop-Location;
 }
