@@ -5,7 +5,7 @@
     <Description>OWIN middleware to provide CRUD and search for Lucene.Net</Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LuceneSearch\LuceneSearch.csproj" />

@@ -3,9 +3,8 @@ param(
 )
 
 $DotNetChannel = "Current";
-$DotNetVersion = "2.0.2";
-$DotNetInstallerUri = "https://raw.githubusercontent.com/dotnet/cli/release/2.0.0/scripts/obtain/dotnet-install.ps1";
-$NugetUrl = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
+$DotNetVersion = "2.1.4";
+$DotNetInstallerUri = "https://dot.net/dotnet-install.ps1";
 
 # Make sure tools folder exists
 $PSScriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -48,18 +47,6 @@ if($FoundDotNetCliVersion -ne $DotNetVersion) {
     $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
     $env:DOTNET_CLI_TELEMETRY_OPTOUT=1
 }
-
-###########################################################################
-# INSTALL NUGET
-###########################################################################
-
-# Make sure nuget.exe exists.
-$NugetPath = Join-Path $ToolPath "nuget.exe"
-if (!(Test-Path $NugetPath)) {
-    Write-Host "Downloading NuGet.exe..."
-    (New-Object System.Net.WebClient).DownloadFile($NugetUrl, $NugetPath);
-}
-
 
 ###########################################################################
 # RUN BUILD SCRIPT
