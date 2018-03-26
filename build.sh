@@ -13,7 +13,7 @@ dotnet restore
 dotnet build -c Release
 
 for f in test/**/*.Tests.csproj; do
-    dotnet test $f -c Release
+    dotnet test $f -c Release /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=./lcov.info
 done
 
 for f in src/**/*.csproj; do

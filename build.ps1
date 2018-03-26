@@ -59,7 +59,7 @@ Invoke-Expression "dotnet build -c $Configuration"
 
 Get-ChildItem test -Recurse -Filter *.Tests.csproj | ForEach-Object {
     Push-Location $_.DirectoryName
-    Invoke-Expression "dotnet test -c $Configuration"
+    Invoke-Expression "dotnet test -c $Configuration /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=./lcov.info"
     if($LASTEXITCODE -ne 0) {
         Pop-Location;
         Pop-Location;
