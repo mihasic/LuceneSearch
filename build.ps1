@@ -3,7 +3,7 @@ param(
 )
 
 $DotNetChannel = "Current";
-$DotNetVersion = "2.1.4";
+$DotNetVersion = "2.1.301";
 $DotNetInstallerUri = "https://dot.net/dotnet-install.ps1";
 
 # Make sure tools folder exists
