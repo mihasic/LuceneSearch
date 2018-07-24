@@ -7,5 +7,6 @@
     <PackageLicenseUrl>https://github.com/mihasic/LuceneSearch/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/mihasic/LuceneSearch/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mihasic/LuceneSearch/</RepositoryUrl>
+    <PackageReleaseNotes>Support hot index copy</PackageReleaseNotes>
   </PropertyGroup>
 </Project>
