@@ -3,17 +3,8 @@ param(
 )
 
 $DotNetChannel = "Current";
-$DotNetVersion = "2.0.2";
-$DotNetInstallerUri = "https://raw.githubusercontent.com/dotnet/cli/release/2.0.0/scripts/obtain/dotnet-install.ps1";
-$NugetUrl = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
-
-# Make sure tools folder exists
-$PSScriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
-$ToolPath = Join-Path $PSScriptRoot "tools"
-if (!(Test-Path $ToolPath)) {
-    Write-Verbose "Creating tools directory..."
-    New-Item -Path $ToolPath -Type directory | out-null
-}
+$DotNetVersion = "2.1.302";
+$DotNetInstallerUri = "https://dot.net/dotnet-install.ps1";
 
 ###########################################################################
 # INSTALL .NET CORE CLI
@@ -50,18 +41,6 @@ if($FoundDotNetCliVersion -ne $DotNetVersion) {
 }
 
 ###########################################################################
-# INSTALL NUGET
-###########################################################################
-
-# Make sure nuget.exe exists.
-$NugetPath = Join-Path $ToolPath "nuget.exe"
-if (!(Test-Path $NugetPath)) {
-    Write-Host "Downloading NuGet.exe..."
-    (New-Object System.Net.WebClient).DownloadFile($NugetUrl, $NugetPath);
-}
-
-
-###########################################################################
 # RUN BUILD SCRIPT
 ###########################################################################
 
@@ -72,7 +51,7 @@ Invoke-Expression "dotnet build -c $Configuration"
 
 Get-ChildItem test -Recurse -Filter *.Tests.csproj | ForEach-Object {
     Push-Location $_.DirectoryName
-    Invoke-Expression "dotnet test -c $Configuration"
+    Invoke-Expression "dotnet test -c $Configuration /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=./lcov.info"
     if($LASTEXITCODE -ne 0) {
         Pop-Location;
         Pop-Location;

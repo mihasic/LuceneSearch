@@ -6,11 +6,11 @@ matrix:
       dist: trusty
       sudo: required
       mono: none
-      dotnet: 2.0.0
+      dotnet: 2.1.302
     - os: osx
       osx_image: xcode9
       mono: none
-      dotnet: 2.0.2
+      dotnet: 2.1.302
 
 script:
   - dotnet --info

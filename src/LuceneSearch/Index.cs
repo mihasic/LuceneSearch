@@ -26,7 +26,10 @@ namespace LuceneSearch
         private IndexWriter _writer;
 
         private IndexWriter Writer =>
-            _writer = _writer ?? new IndexWriter(_dir, new IndexWriterConfig(LuceneVersion.LUCENE_48, _analyzer));
+            _writer = _writer ?? new IndexWriter(_dir, new IndexWriterConfig(LuceneVersion.LUCENE_48, _analyzer)
+            {
+                IndexDeletionPolicy = new SnapshotDeletionPolicy(new KeepOnlyLastCommitDeletionPolicy())
+            });
 
         public Index(string directory, IEnumerable<Field> mapping)
         {
@@ -195,7 +198,8 @@ namespace LuceneSearch
             int skip = 0,
             string sort = null,
             bool reverseSort = false,
-            ISet<string> fieldsToLoad = null) => QuerySearch(Parse(query, null), take, skip, sort, reverseSort, fieldsToLoad);
+            ISet<string> fieldsToLoad = null) =>
+            QuerySearch(Parse(query, null), take, skip, sort, reverseSort, fieldsToLoad);
 
         private SearchResult QuerySearch(
             Query mainQuery,
@@ -258,6 +262,25 @@ namespace LuceneSearch
             finally
             {
                 _sm.Value.Release(searcher);
+            }
+        }
+
+        public void Copy(string dest)
+        {
+            var destDir = DirectoryProvider.Create(dest);
+            var policy = (SnapshotDeletionPolicy) Writer.Config.IndexDeletionPolicy;
+            var commit = policy.Snapshot();
+            try
+            {
+                foreach (var file in commit.FileNames)
+                {
+                    _dir.Copy(destDir, file, file, IOContext.READ_ONCE);
+                }
+            }
+            finally
+            {
+                policy.Release(commit);
+                Writer.DeleteUnusedFiles();
             }
         }
 

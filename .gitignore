@@ -277,3 +277,6 @@ test/TestServer/data*/
 # other
 ol_dump_authors_*.txt
 ol_dump_authors_*.txt.gz
+
+# coverlet
+lcov.info

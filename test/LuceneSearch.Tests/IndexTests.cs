@@ -1,24 +1,24 @@
-using System.Collections.Generic;
-
 namespace LuceneSearch.Tests
 {
     using System;
+    using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using Shouldly;
     using Xunit;
-    using P = KeyValuePair<string, string>;
+    using P = System.Collections.Generic.KeyValuePair<string, string>;
 
     public class IndexTests : IDisposable
     {
         private readonly Index _index;
+        private readonly Field[] _mapping =
+        {
+            new Field("key"),
+            new Field("value", resultOnly: true),
+            new Field("multivalue")
+        };
 
-        public IndexTests() =>
-            _index = new Index("~TEMP", new[]
-            {
-                new Field("key"),
-                new Field("value", resultOnly: true),
-                new Field("multivalue")
-            });
+        public IndexTests() => _index = new Index("~TEMP", _mapping);
 
         [Fact]
         public void Can_get_count()
@@ -60,6 +60,29 @@ namespace LuceneSearch.Tests
             (total, _, docs) = _index.Search(query, fieldsToLoad: new HashSet<string>(){"key"});
             total.ShouldBe(1);
             docs.SelectMany(x => x).Single(x => x.Key == "key").Value.ShouldBe("1");
+        }
+
+        [Fact]
+        public void Can_backup_index_with_uncommitted_changes()
+        {
+            var destIndex = Path.Combine(Path.GetTempPath(), "lpbak-" + Guid.NewGuid().ToString("N"));
+
+            _index.UpdateByTerm("key", "1", new[] { new P("key", "1")});
+            _index.UpdateByTerm("key", "2", new[] { new P("key", "2")});
+            _index.UpdateByTerm("key", "3", new[] { new P("key", "3")}, commit: false);
+
+            _index.Copy(destIndex);
+
+            _index.DeleteByTerm("key", "1", commit: true);
+
+            var (total, _, docs) = _index.Search(IndexQuery.All, fieldsToLoad: new HashSet<string>(){"key"});
+            total.ShouldBe(2);
+            docs.SelectMany(x => x).Select(x => x.Value).ShouldBe(new [] { "2", "3" }, "Index has been updated");
+
+            var backup = new Index(destIndex, _mapping);
+            (total, _, docs) = backup.Search(IndexQuery.All, fieldsToLoad: new HashSet<string>(){"key"});
+            total.ShouldBe(2);
+            docs.SelectMany(x => x).Select(x => x.Value).ShouldBe(new [] { "1", "2" }, "Only committed ids persisted");
         }
 
         public void Dispose() => _index.Dispose();
