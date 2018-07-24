@@ -6,14 +6,6 @@ $DotNetChannel = "Current";
 $DotNetVersion = "2.1.302";
 $DotNetInstallerUri = "https://dot.net/dotnet-install.ps1";
 
-# Make sure tools folder exists
-$PSScriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
-$ToolPath = Join-Path $PSScriptRoot "tools"
-if (!(Test-Path $ToolPath)) {
-    Write-Verbose "Creating tools directory..."
-    New-Item -Path $ToolPath -Type directory | out-null
-}
-
 ###########################################################################
 # INSTALL .NET CORE CLI
 ###########################################################################
